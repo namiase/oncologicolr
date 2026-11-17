@@ -1,0 +1,1494 @@
+{
+ "countryCode": "VE",
+ "states": [
+  {
+   "code": "VE-Z",
+   "name": "Amazonas",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Alto Orinoco"
+    },
+    {
+     "code": null,
+     "name": "Atabapo"
+    },
+    {
+     "code": null,
+     "name": "Atures"
+    },
+    {
+     "code": null,
+     "name": "Autana"
+    },
+    {
+     "code": null,
+     "name": "Manapiare"
+    },
+    {
+     "code": null,
+     "name": "Maroa"
+    },
+    {
+     "code": null,
+     "name": "Río Negro"
+    }
+   ]
+  },
+  {
+   "code": "VE-B",
+   "name": "Anzoátegui",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Anaco"
+    },
+    {
+     "code": null,
+     "name": "Aragua"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Bruzual"
+    },
+    {
+     "code": null,
+     "name": "Cajigal"
+    },
+    {
+     "code": null,
+     "name": "Carvajal"
+    },
+    {
+     "code": null,
+     "name": "Diego Bautista Urbaneja"
+    },
+    {
+     "code": null,
+     "name": "Freites"
+    },
+    {
+     "code": null,
+     "name": "Guanipa"
+    },
+    {
+     "code": null,
+     "name": "Guanta"
+    },
+    {
+     "code": null,
+     "name": "Independencia"
+    },
+    {
+     "code": null,
+     "name": "Libertad"
+    },
+    {
+     "code": null,
+     "name": "McGregor"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Monagas"
+    },
+    {
+     "code": null,
+     "name": "Peñalver"
+    },
+    {
+     "code": null,
+     "name": "Píritu"
+    },
+    {
+     "code": null,
+     "name": "San Juan de Capistrano"
+    },
+    {
+     "code": null,
+     "name": "Santa Ana"
+    },
+    {
+     "code": null,
+     "name": "Simón Rodríguez"
+    },
+    {
+     "code": null,
+     "name": "Sotillo"
+    }
+   ]
+  },
+  {
+   "code": "VE-C",
+   "name": "Apure",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Achaguas"
+    },
+    {
+     "code": null,
+     "name": "Biruaca"
+    },
+    {
+     "code": null,
+     "name": "Muñoz"
+    },
+    {
+     "code": null,
+     "name": "Páez"
+    },
+    {
+     "code": null,
+     "name": "Pedro Camejo"
+    },
+    {
+     "code": null,
+     "name": "Rómulo Gallegos"
+    },
+    {
+     "code": null,
+     "name": "San Fernando"
+    }
+   ]
+  },
+  {
+   "code": "VE-D",
+   "name": "Aragua",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Camatagua"
+    },
+    {
+     "code": null,
+     "name": "Francisco Linares Alcántara"
+    },
+    {
+     "code": null,
+     "name": "Girardot"
+    },
+    {
+     "code": null,
+     "name": "José Ángel Lamas"
+    },
+    {
+     "code": null,
+     "name": "José Félix Ribas"
+    },
+    {
+     "code": null,
+     "name": "José Rafael Revenga"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Mario Briceño Iragorry"
+    },
+    {
+     "code": null,
+     "name": "Ocumare de la Costa de Oro"
+    },
+    {
+     "code": null,
+     "name": "San Casimiro"
+    },
+    {
+     "code": null,
+     "name": "San Sebastián"
+    },
+    {
+     "code": null,
+     "name": "Santiago Mariño"
+    },
+    {
+     "code": null,
+     "name": "Santos Michelena"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Tovar"
+    },
+    {
+     "code": null,
+     "name": "Urdaneta"
+    },
+    {
+     "code": null,
+     "name": "Zamora"
+    }
+   ]
+  },
+  {
+   "code": "VE-E",
+   "name": "Barinas",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Alberto Arvelo Torrealba"
+    },
+    {
+     "code": null,
+     "name": "Andrés Eloy Blanco"
+    },
+    {
+     "code": null,
+     "name": "Antonio José de Sucre"
+    },
+    {
+     "code": null,
+     "name": "Arismendi"
+    },
+    {
+     "code": null,
+     "name": "Barinas"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Cruz Paredes"
+    },
+    {
+     "code": null,
+     "name": "Ezequiel Zamora"
+    },
+    {
+     "code": null,
+     "name": "Obispos"
+    },
+    {
+     "code": null,
+     "name": "Pedraza"
+    },
+    {
+     "code": null,
+     "name": "Rojas"
+    },
+    {
+     "code": null,
+     "name": "Sosa"
+    }
+   ]
+  },
+  {
+   "code": "VE-F",
+   "name": "Bolívar",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Angostura"
+    },
+    {
+     "code": null,
+     "name": "Caroní"
+    },
+    {
+     "code": null,
+     "name": "Cedeño"
+    },
+    {
+     "code": null,
+     "name": "El Callao"
+    },
+    {
+     "code": null,
+     "name": "Gran Sabana"
+    },
+    {
+     "code": null,
+     "name": "Heres"
+    },
+    {
+     "code": null,
+     "name": "Padre Pedro Chien"
+    },
+    {
+     "code": null,
+     "name": "Piar"
+    },
+    {
+     "code": null,
+     "name": "Roscio"
+    },
+    {
+     "code": null,
+     "name": "Sifontes"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    }
+   ]
+  },
+  {
+   "code": "VE-G",
+   "name": "Carabobo",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Bejuma"
+    },
+    {
+     "code": null,
+     "name": "Carlos Arvelo"
+    },
+    {
+     "code": null,
+     "name": "Diego Ibarra"
+    },
+    {
+     "code": null,
+     "name": "Guacara"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Los Guayos"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Montalbán"
+    },
+    {
+     "code": null,
+     "name": "Mora"
+    },
+    {
+     "code": null,
+     "name": "Naguanagua"
+    },
+    {
+     "code": null,
+     "name": "Puerto Cabello"
+    },
+    {
+     "code": null,
+     "name": "San Diego"
+    },
+    {
+     "code": null,
+     "name": "San Joaquín"
+    },
+    {
+     "code": null,
+     "name": "Valencia"
+    }
+   ]
+  },
+  {
+   "code": "VE-H",
+   "name": "Cojedes",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Anzoátegui"
+    },
+    {
+     "code": null,
+     "name": "Girardot"
+    },
+    {
+     "code": null,
+     "name": "Lima Blanco"
+    },
+    {
+     "code": null,
+     "name": "Pao de San Juan Bautista"
+    },
+    {
+     "code": null,
+     "name": "Ricaurte"
+    },
+    {
+     "code": null,
+     "name": "Rómulo Gallegos"
+    },
+    {
+     "code": null,
+     "name": "San Carlos"
+    },
+    {
+     "code": null,
+     "name": "Tinaco"
+    },
+    {
+     "code": null,
+     "name": "Tinaquillo"
+    }
+   ]
+  },
+  {
+   "code": "VE-Y",
+   "name": "Delta Amacuro",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Antonio Díaz"
+    },
+    {
+     "code": null,
+     "name": "Casacoima"
+    },
+    {
+     "code": null,
+     "name": "Pedernales"
+    },
+    {
+     "code": null,
+     "name": "Tucupita"
+    }
+   ]
+  },
+  {
+   "code": "VE-W",
+   "name": "Dependencias Federales",
+   "municipalities": []
+  },
+  {
+   "code": "VE-A",
+   "name": "Distrito Capital",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Libertador"
+    }
+   ]
+  },
+  {
+   "code": "VE-I",
+   "name": "Falcón",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Acosta"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Buchivacoa"
+    },
+    {
+     "code": null,
+     "name": "Carirubana"
+    },
+    {
+     "code": null,
+     "name": "Colina"
+    },
+    {
+     "code": null,
+     "name": "Dabajuro"
+    },
+    {
+     "code": null,
+     "name": "Democracia"
+    },
+    {
+     "code": null,
+     "name": "Falcón"
+    },
+    {
+     "code": null,
+     "name": "Federación"
+    },
+    {
+     "code": null,
+     "name": "Jacura"
+    },
+    {
+     "code": null,
+     "name": "Los Taques"
+    },
+    {
+     "code": null,
+     "name": "Manaure"
+    },
+    {
+     "code": null,
+     "name": "Mauroa"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Monseñor Iturriza"
+    },
+    {
+     "code": null,
+     "name": "Palmasola"
+    },
+    {
+     "code": null,
+     "name": "Petit"
+    },
+    {
+     "code": null,
+     "name": "Píritu"
+    },
+    {
+     "code": null,
+     "name": "San Francisco"
+    },
+    {
+     "code": null,
+     "name": "Silva"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Tocópero"
+    },
+    {
+     "code": null,
+     "name": "Unión"
+    },
+    {
+     "code": null,
+     "name": "Urumaco"
+    },
+    {
+     "code": null,
+     "name": "Zamora"
+    }
+   ]
+  },
+  {
+   "code": "VE-J",
+   "name": "Guárico",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Camaguán"
+    },
+    {
+     "code": null,
+     "name": "Chaguaramas"
+    },
+    {
+     "code": null,
+     "name": "El Socorro"
+    },
+    {
+     "code": null,
+     "name": "Infante"
+    },
+    {
+     "code": null,
+     "name": "Las Mercedes"
+    },
+    {
+     "code": null,
+     "name": "Mellado"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Monagas"
+    },
+    {
+     "code": null,
+     "name": "Ortiz"
+    },
+    {
+     "code": null,
+     "name": "Ribas"
+    },
+    {
+     "code": null,
+     "name": "Roscio"
+    },
+    {
+     "code": null,
+     "name": "San Gerónimo de Guayabal"
+    },
+    {
+     "code": null,
+     "name": "San José de Guaribe"
+    },
+    {
+     "code": null,
+     "name": "Santa María de Ipire"
+    },
+    {
+     "code": null,
+     "name": "Zaraza"
+    }
+   ]
+  },
+  {
+   "code": "VE-X",
+   "name": "La Guaira",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Vargas"
+    }
+   ]
+  },
+  {
+   "code": "VE-K",
+   "name": "Lara",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Andrés Eloy Blanco"
+    },
+    {
+     "code": null,
+     "name": "Crespo"
+    },
+    {
+     "code": null,
+     "name": "Iribarren"
+    },
+    {
+     "code": null,
+     "name": "Jiménez"
+    },
+    {
+     "code": null,
+     "name": "Morán"
+    },
+    {
+     "code": null,
+     "name": "Palavecino"
+    },
+    {
+     "code": null,
+     "name": "Simón Planas"
+    },
+    {
+     "code": null,
+     "name": "Torres"
+    },
+    {
+     "code": null,
+     "name": "Urdaneta"
+    }
+   ]
+  },
+  {
+   "code": "VE-L",
+   "name": "Mérida",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Alberto Adriani"
+    },
+    {
+     "code": null,
+     "name": "Andrés Bello"
+    },
+    {
+     "code": null,
+     "name": "Antonio Pinto Salinas"
+    },
+    {
+     "code": null,
+     "name": "Aricagua"
+    },
+    {
+     "code": null,
+     "name": "Arzobispo Chacón"
+    },
+    {
+     "code": null,
+     "name": "Campo Elías"
+    },
+    {
+     "code": null,
+     "name": "Caracciolo Parra Olmedo"
+    },
+    {
+     "code": null,
+     "name": "Cardenal Quintero"
+    },
+    {
+     "code": null,
+     "name": "Guaraque"
+    },
+    {
+     "code": null,
+     "name": "Julio César Salas"
+    },
+    {
+     "code": null,
+     "name": "Justo Briceño"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Obispo Ramos de Lora"
+    },
+    {
+     "code": null,
+     "name": "Padre Noguera"
+    },
+    {
+     "code": null,
+     "name": "Pueblo Llano"
+    },
+    {
+     "code": null,
+     "name": "Rangel"
+    },
+    {
+     "code": null,
+     "name": "Rivas Dávila"
+    },
+    {
+     "code": null,
+     "name": "Santos Marquina"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Tovar"
+    },
+    {
+     "code": null,
+     "name": "Tulio Febres Cordero"
+    },
+    {
+     "code": null,
+     "name": "Zea"
+    }
+   ]
+  },
+  {
+   "code": "VE-M",
+   "name": "Miranda",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Acevedo"
+    },
+    {
+     "code": null,
+     "name": "Andrés Bello"
+    },
+    {
+     "code": null,
+     "name": "Baruta"
+    },
+    {
+     "code": null,
+     "name": "Brión"
+    },
+    {
+     "code": null,
+     "name": "Buroz"
+    },
+    {
+     "code": null,
+     "name": "Carrizal"
+    },
+    {
+     "code": null,
+     "name": "Chacao"
+    },
+    {
+     "code": null,
+     "name": "Cristóbal Rojas"
+    },
+    {
+     "code": null,
+     "name": "El Hatillo"
+    },
+    {
+     "code": null,
+     "name": "Guaicaipuro"
+    },
+    {
+     "code": null,
+     "name": "Independencia"
+    },
+    {
+     "code": null,
+     "name": "Lander"
+    },
+    {
+     "code": null,
+     "name": "Los Salias"
+    },
+    {
+     "code": null,
+     "name": "Páez"
+    },
+    {
+     "code": null,
+     "name": "Paz Castillo"
+    },
+    {
+     "code": null,
+     "name": "Pedro Gual"
+    },
+    {
+     "code": null,
+     "name": "Plaza"
+    },
+    {
+     "code": null,
+     "name": "Simón Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Urdaneta"
+    },
+    {
+     "code": null,
+     "name": "Zamora"
+    }
+   ]
+  },
+  {
+   "code": "VE-N",
+   "name": "Monagas",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Acosta"
+    },
+    {
+     "code": null,
+     "name": "Aguasay"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Caripe"
+    },
+    {
+     "code": null,
+     "name": "Cedeño"
+    },
+    {
+     "code": null,
+     "name": "Ezequiel Zamora"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Maturín"
+    },
+    {
+     "code": null,
+     "name": "Piar"
+    },
+    {
+     "code": null,
+     "name": "Punceres"
+    },
+    {
+     "code": null,
+     "name": "Santa Bárbara"
+    },
+    {
+     "code": null,
+     "name": "Sotillo"
+    },
+    {
+     "code": null,
+     "name": "Uracoa"
+    }
+   ]
+  },
+  {
+   "code": "VE-O",
+   "name": "Nueva Esparta",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Antolín del Campo"
+    },
+    {
+     "code": null,
+     "name": "Arismendi"
+    },
+    {
+     "code": null,
+     "name": "Díaz"
+    },
+    {
+     "code": null,
+     "name": "García"
+    },
+    {
+     "code": null,
+     "name": "Gómez"
+    },
+    {
+     "code": null,
+     "name": "Maneiro"
+    },
+    {
+     "code": null,
+     "name": "Marcano"
+    },
+    {
+     "code": null,
+     "name": "Mariño"
+    },
+    {
+     "code": null,
+     "name": "Península de Macanao"
+    },
+    {
+     "code": null,
+     "name": "Tubores"
+    },
+    {
+     "code": null,
+     "name": "Villalba"
+    }
+   ]
+  },
+  {
+   "code": "VE-P",
+   "name": "Portuguesa",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Agua Blanca"
+    },
+    {
+     "code": null,
+     "name": "Araure"
+    },
+    {
+     "code": null,
+     "name": "Esteller"
+    },
+    {
+     "code": null,
+     "name": "Guanare"
+    },
+    {
+     "code": null,
+     "name": "Guanarito"
+    },
+    {
+     "code": null,
+     "name": "Monseñor José Vicente de Unda"
+    },
+    {
+     "code": null,
+     "name": "Ospino"
+    },
+    {
+     "code": null,
+     "name": "Páez"
+    },
+    {
+     "code": null,
+     "name": "Papelón"
+    },
+    {
+     "code": null,
+     "name": "San Genaro de Boconoíto"
+    },
+    {
+     "code": null,
+     "name": "San Rafael de Onoto"
+    },
+    {
+     "code": null,
+     "name": "Santa Rosalía"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Turén"
+    }
+   ]
+  },
+  {
+   "code": "VE-R",
+   "name": "Sucre",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Andrés Eloy Blanco"
+    },
+    {
+     "code": null,
+     "name": "Andrés Mata"
+    },
+    {
+     "code": null,
+     "name": "Arismendi"
+    },
+    {
+     "code": null,
+     "name": "Benítez"
+    },
+    {
+     "code": null,
+     "name": "Bermúdez"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Cajigal"
+    },
+    {
+     "code": null,
+     "name": "Cruz Salmerón Acosta"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Mariño"
+    },
+    {
+     "code": null,
+     "name": "Mejía"
+    },
+    {
+     "code": null,
+     "name": "Montes"
+    },
+    {
+     "code": null,
+     "name": "Ribero"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Valdez"
+    }
+   ]
+  },
+  {
+   "code": "VE-S",
+   "name": "Táchira",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Andrés Bello"
+    },
+    {
+     "code": null,
+     "name": "Antonio Rómulo Costa"
+    },
+    {
+     "code": null,
+     "name": "Ayacucho"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Cárdenas"
+    },
+    {
+     "code": null,
+     "name": "Córdoba"
+    },
+    {
+     "code": null,
+     "name": "Fernández Feo"
+    },
+    {
+     "code": null,
+     "name": "Francisco de Miranda"
+    },
+    {
+     "code": null,
+     "name": "García de Hevia"
+    },
+    {
+     "code": null,
+     "name": "Guásimos"
+    },
+    {
+     "code": null,
+     "name": "Independencia"
+    },
+    {
+     "code": null,
+     "name": "Jáuregui"
+    },
+    {
+     "code": null,
+     "name": "José María Vargas"
+    },
+    {
+     "code": null,
+     "name": "Junín"
+    },
+    {
+     "code": null,
+     "name": "Libertad"
+    },
+    {
+     "code": null,
+     "name": "Libertador"
+    },
+    {
+     "code": null,
+     "name": "Lobatera"
+    },
+    {
+     "code": null,
+     "name": "Michelena"
+    },
+    {
+     "code": null,
+     "name": "Panamericano"
+    },
+    {
+     "code": null,
+     "name": "Pedro María Ureña"
+    },
+    {
+     "code": null,
+     "name": "Rafael Urdaneta"
+    },
+    {
+     "code": null,
+     "name": "Samuel Darío Maldonado"
+    },
+    {
+     "code": null,
+     "name": "San Cristóbal"
+    },
+    {
+     "code": null,
+     "name": "San Judas Tadeo"
+    },
+    {
+     "code": null,
+     "name": "Seboruco"
+    },
+    {
+     "code": null,
+     "name": "Simón Rodríguez"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Torbes"
+    },
+    {
+     "code": null,
+     "name": "Uribante"
+    }
+   ]
+  },
+  {
+   "code": "VE-T",
+   "name": "Trujillo",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Andrés Bello"
+    },
+    {
+     "code": null,
+     "name": "Boconó"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Candelaria"
+    },
+    {
+     "code": null,
+     "name": "Carache"
+    },
+    {
+     "code": null,
+     "name": "Escuque"
+    },
+    {
+     "code": null,
+     "name": "José Felipe Márquez Cañizalez"
+    },
+    {
+     "code": null,
+     "name": "Juan Vicente Campos Elías"
+    },
+    {
+     "code": null,
+     "name": "La Ceiba"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Monte Carmelo"
+    },
+    {
+     "code": null,
+     "name": "Motatán"
+    },
+    {
+     "code": null,
+     "name": "Pampán"
+    },
+    {
+     "code": null,
+     "name": "Pampanito"
+    },
+    {
+     "code": null,
+     "name": "Rafael Rangel"
+    },
+    {
+     "code": null,
+     "name": "San Rafael de Carvajal"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Trujillo"
+    },
+    {
+     "code": null,
+     "name": "Urdaneta"
+    },
+    {
+     "code": null,
+     "name": "Valera"
+    }
+   ]
+  },
+  {
+   "code": "VE-U",
+   "name": "Yaracuy",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Arístides Bastidas"
+    },
+    {
+     "code": null,
+     "name": "Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Bruzual"
+    },
+    {
+     "code": null,
+     "name": "Cocorote"
+    },
+    {
+     "code": null,
+     "name": "Independencia"
+    },
+    {
+     "code": null,
+     "name": "José Antonio Páez"
+    },
+    {
+     "code": null,
+     "name": "La Trinidad"
+    },
+    {
+     "code": null,
+     "name": "Manuel Monge"
+    },
+    {
+     "code": null,
+     "name": "Nirgua"
+    },
+    {
+     "code": null,
+     "name": "Peña"
+    },
+    {
+     "code": null,
+     "name": "San Felipe"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Urachiche"
+    },
+    {
+     "code": null,
+     "name": "Veroes"
+    }
+   ]
+  },
+  {
+   "code": "VE-V",
+   "name": "Zulia",
+   "municipalities": [
+    {
+     "code": null,
+     "name": "Almirante Padilla"
+    },
+    {
+     "code": null,
+     "name": "Baralt"
+    },
+    {
+     "code": null,
+     "name": "Cabimas"
+    },
+    {
+     "code": null,
+     "name": "Catatumbo"
+    },
+    {
+     "code": null,
+     "name": "Colón"
+    },
+    {
+     "code": null,
+     "name": "Francisco Javier Pulgar"
+    },
+    {
+     "code": null,
+     "name": "Jesús Enrique Lossada"
+    },
+    {
+     "code": null,
+     "name": "Jesús María Semprún"
+    },
+    {
+     "code": null,
+     "name": "La Cañada de Urdaneta"
+    },
+    {
+     "code": null,
+     "name": "Lagunillas"
+    },
+    {
+     "code": null,
+     "name": "Machiques de Perijá"
+    },
+    {
+     "code": null,
+     "name": "Mara"
+    },
+    {
+     "code": null,
+     "name": "Maracaibo"
+    },
+    {
+     "code": null,
+     "name": "Miranda"
+    },
+    {
+     "code": null,
+     "name": "Páez"
+    },
+    {
+     "code": null,
+     "name": "Rosario de Perijá"
+    },
+    {
+     "code": null,
+     "name": "San Francisco"
+    },
+    {
+     "code": null,
+     "name": "Santa Rita"
+    },
+    {
+     "code": null,
+     "name": "Simón Bolívar"
+    },
+    {
+     "code": null,
+     "name": "Sucre"
+    },
+    {
+     "code": null,
+     "name": "Valmore Rodríguez"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+
+# Node / Vite
+node_modules/
+dist/
+*.local
+
+# Archivos subidos en tiempo de ejecución (logo, etc.)
+backend/src/TrabajoSocial.Api/wwwroot/uploads/*
+!backend/src/TrabajoSocial.Api/wwwroot/uploads/.gitkeep
+
+# Editor / SO
+.idea/
+.DS_Store
+Thumbs.db

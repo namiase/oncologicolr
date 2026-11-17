@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* El modo oscuro se activa con la clase .dark en <html> (elegido por el usuario o según el sistema). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Color de marca (teal). Cambiar aquí ajusta toda la interfaz. */
+  --color-brand-50: var(--color-teal-50);
+  --color-brand-100: var(--color-teal-100);
+  --color-brand-200: var(--color-teal-200);
+  --color-brand-300: var(--color-teal-300);
+  --color-brand-400: var(--color-teal-400);
+  --color-brand-500: var(--color-teal-500);
+  --color-brand-600: var(--color-teal-600);
+  --color-brand-700: var(--color-teal-700);
+  --color-brand-800: var(--color-teal-800);
+  --color-brand-900: var(--color-teal-900);
+  --color-brand-950: var(--color-teal-950);
+
+  /* Superficies (tarjetas, menú, modales). */
+  --color-surface: #ffffff;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  /*
+   * Modo oscuro: la escala neutra (slate) se redefine por FUNCIÓN, como en Radix Colors.
+   * slate-50 sigue siendo "fondo de página", slate-200 "borde", slate-900 "texto principal"…
+   * pero con valores oscuros. Así todos los componentes se adaptan sin duplicar clases;
+   * solo los tonos de marca y de estado llevan variantes dark: explícitas.
+   */
+  html.dark {
+    color-scheme: dark;
+    --color-surface: oklch(20.8% 0.042 265.755);
+    --color-slate-50: oklch(14.5% 0.04 264.7);
+    --color-slate-100: oklch(27.9% 0.041 260.031);
+    --color-slate-200: oklch(30.5% 0.042 259);
+    --color-slate-300: oklch(37.2% 0.044 257.287);
+    --color-slate-400: oklch(55.4% 0.046 257.417);
+    --color-slate-500: oklch(70.4% 0.04 256.788);
+    --color-slate-600: oklch(78% 0.03 255);
+    --color-slate-700: oklch(86.9% 0.022 252.894);
+    --color-slate-800: oklch(92.9% 0.013 255.508);
+    --color-slate-900: oklch(96.8% 0.007 247.896);
+    --color-slate-950: oklch(98.4% 0.003 247.858);
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+  }
+
+  /* Durante el cambio de tema no se animan los colores (evita estados intermedios). */
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition: none !important;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+}

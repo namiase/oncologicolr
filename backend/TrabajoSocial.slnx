@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TrabajoSocial.Api/TrabajoSocial.Api.csproj" />
+    <Project Path="src/TrabajoSocial.Application/TrabajoSocial.Application.csproj" />
+    <Project Path="src/TrabajoSocial.Domain/TrabajoSocial.Domain.csproj" />
+    <Project Path="src/TrabajoSocial.Infrastructure/TrabajoSocial.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TrabajoSocial.UnitTests/TrabajoSocial.UnitTests.csproj" />
+  </Folder>
+</Solution>
