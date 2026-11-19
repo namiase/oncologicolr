@@ -52,13 +52,19 @@ interface QuickLinkProps {
 
 function QuickLink({ to, title, description, icon: Icon }: QuickLinkProps) {
   return (
-    <Link to={to} className="group rounded-xl bg-surface p-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 dark:hover:ring-brand-700">
-      <Icon className="size-6 text-brand-700 dark:text-brand-400" aria-hidden />
-      <p className="mt-3 font-medium text-slate-900">{title}</p>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
-      <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-700 dark:text-brand-400">
-        Ir <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+    <Link
+      to={to}
+      className="group flex items-start gap-3 rounded-xl bg-surface p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 dark:hover:ring-brand-700"
+    >
+      <Icon className="mt-0.5 size-5 shrink-0 text-brand-700 dark:text-brand-400" aria-hidden />
+      <span className="min-w-0 flex-1">
+        <span className="block font-medium text-slate-900">{title}</span>
+        <span className="mt-0.5 block text-sm text-slate-500">{description}</span>
       </span>
+      <ArrowRight
+        className="mt-0.5 size-4 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700 dark:group-hover:text-brand-400"
+        aria-hidden
+      />
     </Link>
   )
 }
