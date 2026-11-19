@@ -76,15 +76,16 @@ public sealed class DbSeeder(
 
     private async Task<Dictionary<string, Menu>> SeedMenusAsync(CancellationToken ct)
     {
+        // Títulos en mayúscula solo al inicio, igual que los títulos de cada página.
         var definitions = new (string Code, string Title, string? Path, string Icon, int Order, string? Parent)[]
         {
             (MenuCodes.Home, "Inicio", "/inicio", "house", 1, null),
-            (MenuCodes.CreateReport, "Crear Informe", "/informes/nuevo", "file-plus", 2, null),
+            (MenuCodes.CreateReport, "Crear informe", "/informes/nuevo", "file-plus", 2, null),
             (MenuCodes.Configuration, "Configuración", null, "settings", 3, null),
-            (MenuCodes.MasterTables, "Tablas Maestras", "/configuracion/tablas-maestras", "database", 1, MenuCodes.Configuration),
-            (MenuCodes.SocialWorkers, "Trabajadoras Sociales", "/configuracion/trabajadoras-sociales", "users", 2, MenuCodes.Configuration),
+            (MenuCodes.MasterTables, "Tablas maestras", "/configuracion/tablas-maestras", "database", 1, MenuCodes.Configuration),
+            (MenuCodes.SocialWorkers, "Trabajadoras sociales", "/configuracion/trabajadoras-sociales", "users", 2, MenuCodes.Configuration),
             (MenuCodes.Users, "Usuarios", "/configuracion/usuarios", "user-cog", 3, MenuCodes.Configuration),
-            (MenuCodes.CompanySettings, "Empresa y Logo", "/configuracion/empresa", "building-2", 4, MenuCodes.Configuration),
+            (MenuCodes.CompanySettings, "Empresa y logo", "/configuracion/empresa", "building-2", 4, MenuCodes.Configuration),
             (MenuCodes.Reports, "Reportes", "/reportes", "chart-column", 4, null)
         };
 

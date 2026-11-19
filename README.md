@@ -181,7 +181,7 @@ Para **agregar un catálogo nuevo**:
    dotnet ef migrations add AgregarEtnia -p src/TrabajoSocial.Infrastructure -s src/TrabajoSocial.Api -o Persistence/Migrations
    ```
 
-No hace falta código de frontend: la pantalla aparece sola en *Configuración → Tablas Maestras*.
+No hace falta código de frontend: la pantalla aparece sola en *Configuración → Tablas maestras*.
 
 ## Pruebas
 
