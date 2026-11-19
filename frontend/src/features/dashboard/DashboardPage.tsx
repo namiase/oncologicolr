@@ -90,7 +90,6 @@ export function DashboardPage() {
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
           {greeting(now.getHours())}, {firstName}
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Este es el resumen general del sistema.</p>
       </div>
 
       <section aria-label="Métricas generales" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
