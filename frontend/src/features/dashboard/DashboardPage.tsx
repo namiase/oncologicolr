@@ -33,7 +33,7 @@ function StatCard({ label, value, icon: Icon, hint }: StatCardProps) {
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">{value}</p>
-          {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+          {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
         </div>
         <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
           <Icon className="size-5" aria-hidden />
