@@ -6,6 +6,7 @@ export function NotFoundPage() {
   return (
     <EmptyState
       icon={SearchX}
+      titleAs="h1"
       title="Página no encontrada"
       description="La dirección no existe o fue movida."
       action={

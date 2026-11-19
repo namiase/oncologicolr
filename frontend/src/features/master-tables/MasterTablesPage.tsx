@@ -41,6 +41,7 @@ export function MasterTablesPage() {
   if (definitions.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudieron cargar las tablas maestras"
         description={getErrorMessage(definitions.error)}
         action={

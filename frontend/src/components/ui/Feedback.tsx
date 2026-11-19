@@ -25,15 +25,20 @@ interface EmptyStateProps {
   description?: string
   action?: ReactNode
   className?: string
+  /**
+   * Etiqueta del título. Dentro de una página que ya tiene su h1 es un párrafo (no abre una
+   * sección). Úsese "h1" cuando el estado vacío es toda la página (404, acceso restringido).
+   */
+  titleAs?: 'h1' | 'p'
 }
 
-export function EmptyState({ icon: Icon = Inbox, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ icon: Icon = Inbox, title, description, action, className, titleAs: Title = 'p' }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
       <span className="flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
         <Icon className="size-6" aria-hidden />
       </span>
-      <h3 className="mt-4 text-sm font-semibold text-slate-900">{title}</h3>
+      <Title className="mt-4 text-sm font-semibold text-slate-900">{title}</Title>
       {description && <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
