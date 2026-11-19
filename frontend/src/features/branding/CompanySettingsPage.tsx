@@ -104,7 +104,7 @@ function CompanySettingsForm({ initial }: { initial: Branding }) {
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-2">
                   <label
-                    className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-surface px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-control ring-inset hover:bg-slate-50 ${!canUpdate ? 'pointer-events-none opacity-60' : ''}`}
+                    className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-surface px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-control ring-inset hover:bg-slate-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${!canUpdate ? 'pointer-events-none opacity-60' : ''}`}
                   >
                     <Upload className="size-4" aria-hidden />
                     {hasCustomLogo ? 'Cambiar logo' : 'Subir logo'}
