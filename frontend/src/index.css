@@ -24,6 +24,9 @@
 
   /* Borde de controles (campos, selects, botones secundarios): 3:1 sobre la superficie (WCAG 1.4.11). */
   --color-control: oklch(64% 0.04 257);
+
+  /* Fondo al pasar el puntero sobre filas y botones con superficie: siempre "se eleva" un poco. */
+  --color-hover: oklch(98.4% 0.003 247.858);
 }
 
 @layer base {
@@ -41,6 +44,7 @@
     color-scheme: dark;
     --color-surface: oklch(20.8% 0.042 265.755);
     --color-control: oklch(55.4% 0.046 257.417);
+    --color-hover: oklch(27.9% 0.041 260.031);
     --color-slate-50: oklch(14.5% 0.04 264.7);
     --color-slate-100: oklch(27.9% 0.041 260.031);
     --color-slate-200: oklch(30.5% 0.042 259);

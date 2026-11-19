@@ -93,7 +93,7 @@ export function CrudTable<TItem extends CrudEntity>({
                 </tr>
               ))
             : items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/70">
+                <tr key={item.id} className="hover:bg-hover/70">
                   {columns.map((column) => (
                     <td
                       key={column.key}

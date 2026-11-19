@@ -7,7 +7,7 @@ type Size = 'sm' | 'md' | 'icon'
 
 const variants: Record<Variant, string> = {
   primary: 'bg-brand-700 text-white shadow-sm hover:bg-brand-800 disabled:bg-brand-700/60',
-  secondary: 'bg-surface text-slate-700 shadow-sm ring-1 ring-inset ring-control hover:bg-slate-50',
+  secondary: 'bg-surface text-slate-700 shadow-sm ring-1 ring-inset ring-control hover:bg-hover',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   danger: 'bg-red-600 text-white shadow-sm hover:bg-red-700 disabled:bg-red-600/60',
 }
