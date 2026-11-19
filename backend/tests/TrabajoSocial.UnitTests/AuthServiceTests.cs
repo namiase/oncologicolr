@@ -71,8 +71,9 @@ public sealed class AuthServiceTests
             Assert.Equal(AuthService.InvalidCredentials, failed.Message);
         }
 
+        // Bloqueada: ni la contraseña correcta entra, y el mensaje no revela el bloqueo.
         var locked = await Assert.ThrowsAsync<AuthenticationFailedException>(() => Login(host, TestHost.AdminPassword));
-        Assert.Contains("bloqueado", locked.Message);
+        Assert.Equal(AuthService.InvalidCredentials, locked.Message);
 
         host.Time.Advance(AuthService.LockoutDuration + TimeSpan.FromSeconds(1));
         Assert.NotNull((await Login(host, TestHost.AdminPassword)).AccessToken);

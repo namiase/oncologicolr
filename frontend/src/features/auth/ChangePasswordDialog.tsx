@@ -8,7 +8,9 @@ import { Modal } from '@/components/ui/Modal'
 import { PasswordField } from '@/components/ui/PasswordFields'
 import { containsUsername, PASSWORD_HINT, passwordRule, USERNAME_IN_PASSWORD } from '@/features/users/passwordRules'
 import { usersApi } from '@/features/users/usersApi'
+import { refreshSession } from '@/lib/api'
 import { getErrorMessage, getFieldErrors } from '@/lib/errors'
+import { endSession } from './session'
 import { useAuthStore } from '@/stores/authStore'
 
 const buildSchema = (username: string | undefined) =>
@@ -20,8 +22,17 @@ const buildSchema = (username: string | undefined) =>
 
 type ChangeForm = z.infer<ReturnType<typeof buildSchema>>
 
+interface ChangePasswordDialogProps {
+  onClose?: () => void
+  /**
+   * Contraseña asignada por un administrador: el cambio es obligatorio. El diálogo no se
+   * puede cerrar (solo cerrar sesión) y, al guardar, se renueva el token para continuar.
+   */
+  required?: boolean
+}
+
 /** El usuario cambia su propia contraseña. Su sesión actual sigue abierta; las de otros equipos se cierran. */
-export function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
+export function ChangePasswordDialog({ onClose = () => {}, required = false }: ChangePasswordDialogProps) {
   const username = useAuthStore((s) => s.user?.username)
   const schema = useMemo(() => buildSchema(username), [username])
   const {
@@ -37,7 +48,13 @@ export function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
   const submit = handleSubmit(async ({ currentPassword, newPassword }) => {
     try {
       await usersApi.changeOwnPassword(currentPassword, newPassword)
-      toast.success('Contraseña actualizada. Se cerraron sus sesiones en otros equipos.')
+      if (required) {
+        // El token actual aún dice "cambio pendiente": se pide uno nuevo (y el usuario actualizado).
+        await refreshSession()
+        toast.success('Contraseña actualizada. Ya puede usar el sistema.')
+      } else {
+        toast.success('Contraseña actualizada. Se cerraron sus sesiones en otros equipos.')
+      }
       onClose()
     } catch (error) {
       const fields = getFieldErrors(error)
@@ -50,14 +67,23 @@ export function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
     <Modal
       open
       onClose={onClose}
-      title="Cambiar contraseña"
+      title={required ? 'Cambie su contraseña' : 'Cambiar contraseña'}
+      description={
+        required ? 'Su contraseña fue asignada por un administrador. Por seguridad, elija una nueva para continuar.' : undefined
+      }
       size="sm"
-      dismissible={!isSubmitting}
+      dismissible={!required && !isSubmitting}
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
-          </Button>
+          {required ? (
+            <Button variant="secondary" onClick={() => void endSession()} disabled={isSubmitting}>
+              Cerrar sesión
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+              Cancelar
+            </Button>
+          )}
           <Button type="submit" form="change-password-form" loading={isSubmitting}>
             Guardar
           </Button>

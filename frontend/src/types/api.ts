@@ -50,6 +50,8 @@ export interface CurrentUser {
   email: string | null
   roleId: string
   roleName: string
+  /** Tiene una contraseña asignada por un administrador: debe cambiarla antes de usar el sistema. */
+  mustChangePassword: boolean
   menus: MenuItem[]
 }
 

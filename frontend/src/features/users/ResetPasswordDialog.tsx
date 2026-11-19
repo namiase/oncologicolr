@@ -39,7 +39,7 @@ export function ResetPasswordDialog({ user, onClose, onReset }: ResetPasswordDia
   const submit = handleSubmit(async ({ newPassword }) => {
     try {
       await usersApi.resetPassword(user.id, newPassword)
-      toast.success(`Contraseña de ${user.username} restablecida. Deberá iniciar sesión con la nueva.`)
+      toast.success(`Contraseña de ${user.username} restablecida. Deberá cambiarla al iniciar sesión.`)
       onReset()
       onClose()
     } catch (error) {
@@ -69,7 +69,8 @@ export function ResetPasswordDialog({ user, onClose, onReset }: ResetPasswordDia
     >
       <form id="reset-password-form" onSubmit={submit} noValidate className="space-y-4">
         <p className="text-sm text-slate-600">
-          Se cerrarán las sesiones abiertas del usuario y su cuenta quedará desbloqueada.
+          Se cerrarán las sesiones abiertas del usuario y su cuenta quedará desbloqueada. La contraseña es
+          temporal: deberá cambiarla al iniciar sesión.
         </p>
         <PasswordField label="Nueva contraseña" registration={register('newPassword')} error={errors.newPassword} hint={PASSWORD_HINT} autoFocus />
         <PasswordField label="Confirmar contraseña" registration={register('confirmPassword')} error={errors.confirmPassword} />

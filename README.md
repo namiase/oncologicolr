@@ -108,7 +108,8 @@ frontend/src/
 | Inactividad | 30 min (`Session:IdleTimeoutMinutes`). Aviso 2 min antes y cierre automático. |
 | Duración máxima | 12 h por sesión aunque haya actividad (`Session:AbsoluteTimeoutHours`). |
 | Cerrar sesión | Invalida **al instante** el access token: el API rechaza su `sid` aunque no haya vencido. |
-| Contraseñas | PBKDF2 (100.000 iteraciones). Bloqueo de 15 min tras 5 intentos y límite de 10 logins/min por IP. |
+| Contraseñas | PBKDF2 (100.000 iteraciones). Bloqueo de 15 min tras 5 intentos y límite de 10 logins/min por IP. El bloqueo solo impide entrar: no cierra sesiones ya abiertas, y la respuesta es la misma que con una contraseña incorrecta. |
+| Clave temporal | La contraseña que asigna un administrador (alta o restablecimiento) debe cambiarse al entrar. Hasta entonces el API rechaza todo lo demás (403). |
 
 **Cómo se renueva el token sin saturar el API**
 
@@ -120,7 +121,8 @@ frontend/src/
 **Revocación en memoria**
 
 - La lista de sesiones cerradas vive en memoria (`ISessionRevocationStore`), así que validar cada petición no consulta la base de datos.
-- Al reiniciar, el API la recarga desde `security.UserSessions`.
+- Una sesión cerrada se mantiene en la lista lo que dura un access token, más la tolerancia de reloj y un margen. Se agrega solo cuando el cierre se guardó en la base de datos.
+- Al reiniciar, el API la recarga desde `security.UserSessions`. Si la base de datos no responde, reintenta, y si no lo logra, el API no arranca: arrancar con la lista vacía volvería a aceptar sesiones cerradas.
 - Si se despliegan varias instancias del API, hay que reemplazarla por una implementación distribuida (por ejemplo, Redis).
 
 **Otras protecciones**
@@ -143,9 +145,9 @@ En *Configuración → Usuarios* (permiso `USERS`) se pueden crear, editar y eli
 
 | Acción | Efecto |
 |---|---|
-| Crear | Exige una contraseña inicial que cumpla la política (mínimo 8 caracteres, letras y números, sin contener el nombre de usuario). El nombre de usuario se guarda en minúsculas y no se puede cambiar. |
+| Crear | Exige una contraseña inicial que cumpla la política (mínimo 8 caracteres, letras y números, sin contener el nombre de usuario). Es temporal: el usuario debe cambiarla en su primer ingreso. El nombre de usuario se guarda en minúsculas y no se puede cambiar. |
 | Cambiar perfil o estatus | Cierra de inmediato las sesiones del usuario, que debe volver a entrar con sus nuevos permisos. |
-| Restablecer contraseña | Asigna una nueva, desbloquea la cuenta y cierra sus sesiones. |
+| Restablecer contraseña | Asigna una temporal, desbloquea la cuenta y cierra sus sesiones. El usuario debe cambiarla al entrar. |
 | Desbloquear | Quita el bloqueo por intentos fallidos. |
 | Cambiar contraseña (botón de llave del encabezado) | Cada usuario cambia la suya. Su sesión actual sigue abierta y se cierran las de otros equipos. |
 
@@ -153,6 +155,7 @@ En *Configuración → Usuarios* (permiso `USERS`) se pueden crear, editar y eli
 
 - Nadie puede eliminarse, desactivarse ni cambiar su propio perfil.
 - Siempre queda al menos un administrador activo.
+- Iniciar sesión no cuenta como edición: el último acceso y los intentos fallidos no cambian "modificado por" (propiedades marcadas con `[NotAudited]`).
 - El nombre de usuario y el correo no se pueden repetir, sin importar mayúsculas o espacios. El correo es opcional, y varias cuentas pueden quedar sin correo.
 
 ### Tema claro / oscuro

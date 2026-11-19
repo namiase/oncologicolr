@@ -62,6 +62,17 @@ export function AppLayout() {
     }
   }
 
+  // Contraseña asignada por un administrador: no se muestra el sistema hasta que la cambie
+  // (el API también rechaza todo lo demás mientras tanto).
+  if (user?.mustChangePassword) {
+    return (
+      <div className="min-h-svh">
+        <SessionWatcher />
+        <ChangePasswordDialog required />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-svh">
       <SessionWatcher />

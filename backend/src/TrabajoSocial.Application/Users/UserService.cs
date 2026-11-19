@@ -118,7 +118,9 @@ public sealed partial class UserService(
             FullName = dto.FullName.Trim(),
             Email = email,
             RoleId = dto.RoleId,
-            StatusId = dto.StatusId
+            StatusId = dto.StatusId,
+            // La contraseña inicial la conoce el administrador: debe cambiarse al primer ingreso.
+            MustChangePassword = true
         };
         user.PasswordHash = passwordHasher.Hash(user, dto.Password);
         await users.AddAsync(user, ct);
@@ -202,6 +204,7 @@ public sealed partial class UserService(
         }
 
         user.PasswordHash = passwordHasher.Hash(user, dto.NewPassword);
+        user.MustChangePassword = true;
         user.AccessFailedCount = 0;
         user.LockoutEnd = null;
         await sessions.EndAllForUserAsync(id, SessionEndReasons.PasswordChanged, null, ct);
@@ -237,8 +240,10 @@ public sealed partial class UserService(
         }
 
         user.PasswordHash = passwordHasher.Hash(user, dto.NewPassword);
+        user.MustChangePassword = false;
 
-        // Se mantiene la sesión actual; se cierran las abiertas en otros equipos.
+        // Se mantiene la sesión actual; se cierran las abiertas en otros equipos. El cliente
+        // renueva su token para obtener uno sin la marca de cambio pendiente.
         await sessions.EndAllForUserAsync(userId, SessionEndReasons.PasswordChanged, currentSessionId, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
@@ -260,6 +265,7 @@ public sealed partial class UserService(
             StatusName = u.Status.Name,
             LastLoginAt = u.LastLoginAt,
             IsLockedOut = u.LockoutEnd != null && u.LockoutEnd > now,
+            MustChangePassword = u.MustChangePassword,
             SocialWorkerId = u.SocialWorker != null ? u.SocialWorker.Id : null,
             SocialWorkerName = u.SocialWorker != null ? u.SocialWorker.FirstNames + " " + u.SocialWorker.LastNames : null,
             CreatedAt = u.CreatedAt,

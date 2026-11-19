@@ -2,11 +2,12 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import { ACTIVE_STATUS_ID } from '@/types/api'
 
-type Tone = 'success' | 'neutral' | 'danger' | 'info'
+type Tone = 'success' | 'neutral' | 'warning' | 'danger' | 'info'
 
 const tones: Record<Tone, string> = {
   success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
   neutral: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+  warning: 'bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30',
   danger: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30',
   info: 'bg-brand-50 text-brand-700 ring-brand-600/20 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/30',
 }

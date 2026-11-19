@@ -16,6 +16,7 @@ export interface UserItem extends CrudEntity {
   statusName: string
   lastLoginAt: string | null
   isLockedOut: boolean
+  mustChangePassword: boolean
   socialWorkerId: string | null
   socialWorkerName: string | null
 }
@@ -114,6 +115,7 @@ export function buildUsersResource({
           <div className="flex flex-wrap gap-1">
             <StatusBadge statusId={u.statusId} statusName={u.statusName} />
             {u.isLockedOut && <Badge tone="danger">Bloqueado</Badge>}
+            {u.mustChangePassword && <Badge tone="warning">Clave temporal</Badge>}
           </div>
         ),
       },
@@ -142,7 +144,14 @@ export function buildUsersResource({
         hint: 'Opcional. Solo aparecen las que aún no tienen usuario.',
         currentOption: (u) => (u.socialWorkerId ? { value: u.socialWorkerId, label: u.socialWorkerName ?? '' } : null),
       },
-      { name: 'password', label: 'Contraseña', type: 'password', required: true, only: 'create', hint: PASSWORD_HINT },
+      {
+        name: 'password',
+        label: 'Contraseña',
+        type: 'password',
+        required: true,
+        only: 'create',
+        hint: `${PASSWORD_HINT} Es temporal: el usuario deberá cambiarla en su primer ingreso.`,
+      },
       { name: 'confirmPassword', label: 'Confirmar contraseña', type: 'password', required: true, only: 'create' },
     ],
     schema: editSchema,

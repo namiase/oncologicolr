@@ -75,10 +75,24 @@ public sealed class AuditableEntityInterceptor(ICurrentUserService currentUser, 
                         deleted.StatusId = StatusIds.Deleted;
                     }
 
+                    // Un login (anónimo) que solo actualiza el último acceso o los intentos
+                    // fallidos no es una edición del registro: se conserva quién lo editó.
+                    if (currentUser.Username is null && OnlyNotAuditedChanges(entry))
+                    {
+                        break;
+                    }
+
                     MarkUpdated(entry, now, user);
                     break;
             }
         }
+    }
+
+    private static bool OnlyNotAuditedChanges(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<BaseEntity> entry)
+    {
+        var modified = entry.Properties.Where(p => p.IsModified).ToList();
+        return modified.Count > 0
+               && modified.All(p => p.Metadata.PropertyInfo?.IsDefined(typeof(NotAuditedAttribute), inherit: true) == true);
     }
 
     private static void MarkUpdated(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<BaseEntity> entry, DateTime now, string user)

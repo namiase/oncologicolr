@@ -15,6 +15,10 @@ public sealed record UserDto
     public string StatusName { get; init; } = string.Empty;
     public DateTime? LastLoginAt { get; init; }
     public bool IsLockedOut { get; init; }
+
+    /// <summary>Tiene una contraseña asignada por un administrador que aún no cambió.</summary>
+    public bool MustChangePassword { get; init; }
+
     public Guid? SocialWorkerId { get; init; }
     public string? SocialWorkerName { get; init; }
     public DateTime CreatedAt { get; init; }
