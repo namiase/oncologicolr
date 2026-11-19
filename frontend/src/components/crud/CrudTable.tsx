@@ -16,6 +16,7 @@ interface CrudTableProps<TItem extends CrudEntity> {
   onDelete: (item: TItem) => void
   getLabel: (item: TItem) => string
   rowActions?: (item: TItem) => RowAction[]
+  canEditItem?: (item: TItem) => boolean
   canDeleteItem?: (item: TItem) => boolean
 }
 
@@ -32,6 +33,7 @@ export function CrudTable<TItem extends CrudEntity>({
   onDelete,
   getLabel,
   rowActions,
+  canEditItem,
   canDeleteItem,
 }: CrudTableProps<TItem>) {
   const hasActions = permissions.canUpdate || permissions.canDelete || Boolean(rowActions)
@@ -119,7 +121,7 @@ export function CrudTable<TItem extends CrudEntity>({
                             {action.icon}
                           </Button>
                         ))}
-                        {permissions.canUpdate && (
+                        {permissions.canUpdate && (canEditItem?.(item) ?? true) && (
                           <Button variant="ghost" size="icon" onClick={() => onEdit(item)} aria-label={`Editar ${getLabel(item)}`} title="Editar">
                             <Pencil className="size-4" />
                           </Button>

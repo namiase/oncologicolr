@@ -165,28 +165,129 @@ public sealed class UserServiceTests
     }
 
     [Fact]
-    public async Task The_last_active_administrator_cannot_be_deactivated()
+    public async Task The_seeded_admin_is_the_only_principal_administrator()
+    {
+        await using var host = await TestHost.CreateAsync();
+        var adminId = await AdminId(host);
+
+        var login = await Login(host, "admin", TestHost.AdminPassword);
+        Assert.True(login.User.IsSuperAdmin);
+        Assert.True(login.User.CanManageAdministrators);
+
+        // Volver a ejecutar el seeder no crea otro principal.
+        await host.SeedAsync();
+        var principals = await host.RunAsync(sp =>
+            sp.GetRequiredService<AppDbContext>().Users.Where(u => u.IsSuperAdmin).Select(u => u.Id).ToListAsync());
+        Assert.Equal([adminId], principals);
+    }
+
+    [Fact]
+    public async Task Nobody_else_can_modify_delete_unlock_or_reset_the_principal_administrator()
     {
         await using var host = await TestHost.CreateAsync();
         var adminId = await AdminId(host);
         var admin = (await host.RunAsync(sp => sp.GetRequiredService<IUserService>().GetByIdAsync(adminId)))!;
 
-        var deactivate = ToUpdate(admin);
-        deactivate.StatusId = StatusIds.Inactive;
-        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() =>
-            host.RunAsync(sp => sp.GetRequiredService<IUserService>().UpdateAsync(adminId, deactivate)));
-        Assert.Contains("al menos un administrador", ex.Message);
+        // Ni siquiera un administrador autorizado por el principal.
+        host.CurrentUser.UserId = adminId;
+        var boss = await CreateUser(host, "jefa", RoleNames.Administrator);
+        await host.RunAsync(sp => sp.GetRequiredService<IUserService>().SetAdminDelegationAsync(boss.Id, true));
+        host.CurrentUser.UserId = boss.Id;
 
-        // Con otro administrador activo sí se permite.
-        await CreateUser(host, "admin2", RoleNames.Administrator);
-        var updated = await host.RunAsync(sp => sp.GetRequiredService<IUserService>().UpdateAsync(adminId, deactivate));
-        Assert.Equal(StatusIds.Inactive, updated.StatusId);
+        var rename = ToUpdate(admin);
+        rename.FullName = "Otro nombre";
+        Func<IUserService, Task>[] attempts =
+        [
+            s => s.UpdateAsync(adminId, rename),
+            s => s.DeleteAsync(adminId),
+            s => s.ResetPasswordAsync(adminId, new ResetPasswordDto { NewPassword = "NuevaClave9" }),
+            s => s.UnlockAsync(adminId)
+        ];
+        foreach (var attempt in attempts)
+        {
+            var ex = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+                host.RunAsync(sp => attempt(sp.GetRequiredService<IUserService>())));
+            Assert.Contains("administrador principal", ex.Message);
+        }
+
+        // Él mismo sí puede corregir su nombre y correo (no su perfil ni su estatus).
+        host.CurrentUser.UserId = adminId;
+        var saved = await host.RunAsync(sp => sp.GetRequiredService<IUserService>().UpdateAsync(adminId, rename));
+        Assert.Equal("Otro nombre", saved.FullName);
+        Assert.True(saved.IsSuperAdmin);
+    }
+
+    [Fact]
+    public async Task Only_the_principal_or_an_authorized_admin_can_create_and_manage_administrators()
+    {
+        await using var host = await TestHost.CreateAsync();
+        var adminId = await AdminId(host);
+        var adminRole = await RoleId(host, RoleNames.Administrator);
+
+        host.CurrentUser.UserId = adminId;
+        var normal = await CreateUser(host, "admin2", RoleNames.Administrator);
+        var other = await CreateUser(host, "admin3", RoleNames.Administrator);
+        var worker = await CreateUser(host, "mlopez");
+
+        // Un administrador normal no crea administradores ni gestiona sus cuentas...
+        host.CurrentUser.UserId = normal.Id;
+        var create = await Assert.ThrowsAsync<ValidationException>(() => CreateUser(host, "admin4", RoleNames.Administrator));
+        Assert.Contains("roleId", create.Errors.Keys);
+
+        var promote = ToUpdate(worker);
+        promote.RoleId = adminRole;
+        await Assert.ThrowsAsync<ValidationException>(() =>
+            host.RunAsync(sp => sp.GetRequiredService<IUserService>().UpdateAsync(worker.Id, promote)));
+        await Assert.ThrowsAsync<BusinessRuleException>(() => host.RunAsync(sp =>
+            sp.GetRequiredService<IUserService>().ResetPasswordAsync(other.Id, new ResetPasswordDto { NewPassword = "NuevaClave9" })));
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            host.RunAsync(sp => sp.GetRequiredService<IUserService>().DeleteAsync(other.Id)));
+
+        // ...ni ve el perfil Administrador entre los asignables; sí gestiona a los demás usuarios.
+        var assignable = await host.RunAsync(sp => sp.GetRequiredService<IUserService>().GetRolesAsync(assignableOnly: true));
+        Assert.DoesNotContain(assignable, r => r.Name == RoleNames.Administrator);
+        await CreateUser(host, "jperez");
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            host.RunAsync(sp => sp.GetRequiredService<IUserService>().SetAdminDelegationAsync(other.Id, true)));
+
+        // El principal lo autoriza: sus sesiones se cierran para que entre con el permiso nuevo.
+        await Login(host, "admin2", Password);
+        var session = (await SessionIds(host, normal.Id)).Single();
+        host.CurrentUser.UserId = adminId;
+        await host.RunAsync(sp => sp.GetRequiredService<IUserService>().SetAdminDelegationAsync(normal.Id, true));
+        Assert.True(IsRevoked(host, session));
+
+        // Autorizado: crea administradores y gestiona a los normales...
+        host.CurrentUser.UserId = normal.Id;
+        var created = await CreateUser(host, "admin4", RoleNames.Administrator);
+        Assert.True(created.IsAdministrator);
+        await host.RunAsync(sp => sp.GetRequiredService<IUserService>()
+            .ResetPasswordAsync(other.Id, new ResetPasswordDto { NewPassword = "NuevaClave9" }));
+
+        // ...pero no autoriza a otros ni toca a otro autorizado: eso es solo del principal.
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            host.RunAsync(sp => sp.GetRequiredService<IUserService>().SetAdminDelegationAsync(other.Id, true)));
+        host.CurrentUser.UserId = adminId;
+        await host.RunAsync(sp => sp.GetRequiredService<IUserService>().SetAdminDelegationAsync(other.Id, true));
+        host.CurrentUser.UserId = normal.Id;
+        var peer = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            host.RunAsync(sp => sp.GetRequiredService<IUserService>().DeleteAsync(other.Id)));
+        Assert.Contains("solo el administrador principal", peer.Message, StringComparison.OrdinalIgnoreCase);
+
+        // Si el principal le quita el perfil Administrador, pierde también la autorización.
+        host.CurrentUser.UserId = adminId;
+        var demote = ToUpdate((await host.RunAsync(sp => sp.GetRequiredService<IUserService>().GetByIdAsync(normal.Id)))!);
+        demote.RoleId = await RoleId(host, RoleNames.SocialWorker);
+        var demoted = await host.RunAsync(sp => sp.GetRequiredService<IUserService>().UpdateAsync(normal.Id, demote));
+        Assert.False(demoted.IsAdministrator);
+        Assert.False(demoted.CanManageAdministrators);
     }
 
     [Fact]
     public async Task Changing_role_closes_the_users_sessions_immediately()
     {
         await using var host = await TestHost.CreateAsync();
+        host.CurrentUser.UserId = await AdminId(host);
         var user = await CreateUser(host, "mlopez");
         var login = await Login(host, "mlopez", Password);
         var session = (await SessionIds(host, user.Id)).Single();

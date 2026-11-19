@@ -101,6 +101,8 @@ export interface CrudResource<TItem extends CrudEntity, TForm extends FieldValue
   searchPlaceholder?: string
   /** Acciones adicionales por fila. */
   rowActions?: (item: TItem) => RowAction[]
+  /** Permite ocultar "Editar" en filas concretas (p. ej. una cuenta protegida). */
+  canEditItem?: (item: TItem) => boolean
   /** Permite ocultar "Eliminar" en filas concretas (p. ej. el propio usuario). */
   canDeleteItem?: (item: TItem) => boolean
 }

@@ -47,6 +47,10 @@ public sealed record CurrentUserDto(
     Guid RoleId,
     string RoleName,
     bool MustChangePassword,
+    // Es el administrador principal (el que creó el sistema).
+    bool IsSuperAdmin,
+    // Puede crear administradores y gestionar sus cuentas (el principal o un autorizado por él).
+    bool CanManageAdministrators,
     IReadOnlyList<MenuItemDto> Menus);
 
 public sealed record MenuPermissionsDto(bool CanCreate, bool CanUpdate, bool CanDelete);

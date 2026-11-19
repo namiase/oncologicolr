@@ -209,6 +209,7 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
             onDelete={setDeleting}
             getLabel={resource.getLabel}
             rowActions={resource.rowActions}
+            canEditItem={resource.canEditItem}
             canDeleteItem={resource.canDeleteItem}
           />
           {list.data && (

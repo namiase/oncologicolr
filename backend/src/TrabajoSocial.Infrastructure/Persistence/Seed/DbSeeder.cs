@@ -157,10 +157,23 @@ public sealed class DbSeeder(
         await db.SaveChangesAsync(ct);
     }
 
+    /// <summary>
+    /// Crea el administrador principal (el que crea el sistema). En bases anteriores a la
+    /// jerarquía de administradores, marca como principal a la cuenta admin ya existente.
+    /// </summary>
     private async Task SeedAdminAsync(Role adminRole, CancellationToken ct)
     {
-        if (await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Username == seed.AdminUsername, ct))
+        var hasPrincipal = await db.Users.AnyAsync(u => u.IsSuperAdmin, ct);
+        var existing = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Username == seed.AdminUsername, ct);
+        if (existing is not null)
         {
+            if (!hasPrincipal && !existing.IsDeleted && existing.RoleId == adminRole.Id)
+            {
+                existing.IsSuperAdmin = true;
+                await db.SaveChangesAsync(ct);
+                logger.LogInformation("Usuario '{Username}' marcado como administrador principal.", seed.AdminUsername);
+            }
+
             return;
         }
 
@@ -171,7 +184,13 @@ public sealed class DbSeeder(
             return;
         }
 
-        var admin = new User { Username = seed.AdminUsername, FullName = seed.AdminFullName, RoleId = adminRole.Id };
+        var admin = new User
+        {
+            Username = seed.AdminUsername,
+            FullName = seed.AdminFullName,
+            RoleId = adminRole.Id,
+            IsSuperAdmin = !hasPrincipal
+        };
         admin.PasswordHash = passwordHasher.Hash(admin, seed.AdminPassword);
         db.Users.Add(admin);
         await db.SaveChangesAsync(ct);

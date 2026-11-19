@@ -17,11 +17,14 @@ public sealed class UsersController(IUserService users) : ControllerBase
     public async Task<ActionResult<PagedResult<UserDto>>> GetPaged([FromQuery] UserQuery query, CancellationToken ct)
         => Ok(await users.GetPagedAsync(query, ct));
 
-    /// <summary>Perfiles activos para asignar a un usuario.</summary>
+    /// <summary>
+    /// Perfiles activos. Con assignable=true, solo los que el usuario actual puede asignar
+    /// (Administrador solo para el principal o un autorizado por él).
+    /// </summary>
     [HttpGet("roles")]
     [HasPermission(MenuCodes.Users, PermissionAction.View)]
-    public async Task<ActionResult<IReadOnlyList<LookupItemDto>>> GetRoles(CancellationToken ct)
-        => Ok(await users.GetRolesAsync(ct));
+    public async Task<ActionResult<IReadOnlyList<LookupItemDto>>> GetRoles([FromQuery] bool assignable, CancellationToken ct)
+        => Ok(await users.GetRolesAsync(assignable, ct));
 
     [HttpGet("{id:guid}")]
     [HasPermission(MenuCodes.Users, PermissionAction.View)]
@@ -65,6 +68,18 @@ public sealed class UsersController(IUserService users) : ControllerBase
     public async Task<IActionResult> Unlock(Guid id, CancellationToken ct)
     {
         await users.UnlockAsync(id, ct);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Solo el administrador principal: autoriza (o no) a un administrador para crear
+    /// administradores y gestionar sus cuentas. Cierra las sesiones del usuario.
+    /// </summary>
+    [HttpPut("{id:guid}/admin-delegation")]
+    [HasPermission(MenuCodes.Users, PermissionAction.Update)]
+    public async Task<IActionResult> SetAdminDelegation(Guid id, AdminDelegationDto dto, CancellationToken ct)
+    {
+        await users.SetAdminDelegationAsync(id, dto.Enabled, ct);
         return NoContent();
     }
 }

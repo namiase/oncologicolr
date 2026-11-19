@@ -1031,6 +1031,9 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<bool>("CanManageAdministrators")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1052,6 +1055,9 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<bool>("IsSuperAdmin")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
@@ -1090,6 +1096,10 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("[Email] IS NOT NULL AND [IsDeleted] = 0");
+
+                    b.HasIndex("IsSuperAdmin")
+                        .IsUnique()
+                        .HasFilter("[IsSuperAdmin] = 1");
 
                     b.HasIndex("RoleId");
 
