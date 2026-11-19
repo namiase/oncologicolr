@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/Feedback'
 import { cn } from '@/lib/cn'
 import { ChangePasswordDialog } from '@/features/auth/ChangePasswordDialog'
 import { endSession } from '@/features/auth/session'
+import { useDocumentTitle } from '@/features/branding/useDocumentTitle'
 import { useAuthStore } from '@/stores/authStore'
 import type { MenuItem } from '@/types/api'
 import { MobileDrawer } from './MobileDrawer'
@@ -49,6 +50,7 @@ export function AppLayout() {
   const user = useAuthStore((s) => s.user)
   const { pathname } = useLocation()
   const trail = findTrail(user?.menus ?? [], pathname) ?? []
+  useDocumentTitle(trail.at(-1)?.title)
 
   // Al cerrar sesión, ProtectedRoute redirige al login automáticamente.
   const logout = () => void endSession()
@@ -77,6 +79,13 @@ export function AppLayout() {
 
   return (
     <div className="min-h-svh">
+      {/* Primer elemento al tabular: permite saltar el menú e ir directo al contenido. */}
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-brand-700 focus:shadow-lg"
+      >
+        Saltar al contenido
+      </a>
       <SessionWatcher />
       {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
       {/* Sidebar fijo en escritorio */}
@@ -149,7 +158,7 @@ export function AppLayout() {
           )}
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+        <main id="contenido" tabIndex={-1} className="mx-auto w-full max-w-7xl px-4 py-6 focus:outline-none sm:px-6 lg:py-8">
           <Suspense fallback={<Spinner className="p-8" />}>
             <Outlet />
           </Suspense>

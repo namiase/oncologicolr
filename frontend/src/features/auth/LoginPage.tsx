@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { CompanyLogo } from '@/components/layout/CompanyLogo'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useBranding } from '@/features/branding/brandingApi'
+import { useDocumentTitle } from '@/features/branding/useDocumentTitle'
 import { getErrorMessage } from '@/lib/errors'
 import { applySession, markActivity } from '@/lib/sessionSync'
 import { useAuthStore } from '@/stores/authStore'
@@ -33,6 +34,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { data: branding } = useBranding()
+  useDocumentTitle('Iniciar sesión')
 
   const {
     register,
