@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { KeyRound, LogOut, Menu as MenuIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +8,7 @@ import { ChangePasswordDialog } from '@/features/auth/ChangePasswordDialog'
 import { endSession } from '@/features/auth/session'
 import { useAuthStore } from '@/stores/authStore'
 import type { MenuItem } from '@/types/api'
+import { MobileDrawer } from './MobileDrawer'
 import { SessionWatcher } from './SessionWatcher'
 import { Sidebar } from './Sidebar'
 import { ThemeToggle } from './ThemeToggle'
@@ -51,6 +52,7 @@ export function AppLayout() {
 
   // Al cerrar sesión, ProtectedRoute redirige al login automáticamente.
   const logout = () => void endSession()
+  const closeMobile = useCallback(() => setMobileOpen(false), [])
 
   const toggleCollapsed = () => {
     const next = !collapsed
@@ -88,23 +90,14 @@ export function AppLayout() {
       </aside>
 
       {/* Drawer en móvil */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-xl">
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-3"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Cerrar menú"
-            >
-              <X className="size-5" />
-            </Button>
-          </aside>
-        </div>
-      )}
+      <MobileDrawer open={mobileOpen} onClose={closeMobile} label="Menú">
+        <aside className="relative h-full">
+          <Sidebar onNavigate={closeMobile} />
+          <Button variant="ghost" size="icon" className="absolute right-2 top-3" onClick={closeMobile} aria-label="Cerrar menú">
+            <X className="size-5" />
+          </Button>
+        </aside>
+      </MobileDrawer>
 
       <div className={cn('transition-[padding] duration-200', collapsed ? 'lg:pl-18' : 'lg:pl-64')}>
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-surface/90 px-4 backdrop-blur sm:px-6">
