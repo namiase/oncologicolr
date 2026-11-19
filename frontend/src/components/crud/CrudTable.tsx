@@ -37,7 +37,7 @@ export function CrudTable<TItem extends CrudEntity>({
   const hasActions = permissions.canUpdate || permissions.canDelete || Boolean(rowActions)
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className={cn('min-w-full divide-y divide-slate-200 text-sm transition-opacity', refreshing && 'opacity-60')}>
         <thead className="bg-slate-50">
           <tr>
