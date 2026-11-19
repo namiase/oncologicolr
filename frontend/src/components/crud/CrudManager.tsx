@@ -27,6 +27,8 @@ interface CrudManagerProps<TItem extends CrudEntity, TForm extends FieldValues> 
 
 type Editing<TItem> = { item: TItem | null } | null
 
+const recordCount = (n: number) => `${formatNumber(n)} ${n === 1 ? 'registro' : 'registros'}`
+
 /**
  * Pantalla CRUD genérica: búsqueda, filtros, tabla ordenable, paginación,
  * alta/edición en modal y eliminación lógica con confirmación.
@@ -116,12 +118,12 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
             <h2 className="text-lg font-semibold text-slate-900">{resource.title}</h2>
             <p className="mt-0.5 text-sm text-slate-500">
               {resource.description ?? 'Administre los registros de esta tabla.'}
-              {list.data && <span className="ml-1">· {formatNumber(list.data.totalCount)} registro(s)</span>}
+              {list.data && <span className="ml-1">· {recordCount(list.data.totalCount)}</span>}
             </p>
           </div>
         ) : (
           <p className="text-sm text-slate-500 sm:self-center">
-            {list.data ? `${formatNumber(list.data.totalCount)} registro(s)` : ' '}
+            {list.data ? recordCount(list.data.totalCount) : ' '}
           </p>
         )}
         {permissions.canCreate && (
