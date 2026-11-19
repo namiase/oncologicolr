@@ -34,7 +34,7 @@ export function Pagination({
         <label className="flex items-center gap-2">
           <span className="hidden sm:inline">Por página</span>
           <select
-            className="h-8 rounded-md border-0 bg-surface pl-2 pr-7 text-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-brand-600"
+            className="h-8 rounded-md border-0 bg-surface pl-2 pr-7 text-sm ring-1 ring-inset ring-control focus:ring-2 focus:ring-brand-600"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             aria-label="Registros por página"
