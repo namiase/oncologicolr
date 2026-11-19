@@ -125,7 +125,7 @@ export function AppLayout() {
                 <p className="text-xs leading-tight text-slate-500">{user.roleName}</p>
               </div>
               <span
-                className="flex size-9 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
+                className="hidden size-9 items-center justify-center rounded-full bg-brand-100 sm:flex text-sm font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
                 aria-hidden
               >
                 {initials(user.fullName)}
