@@ -9,8 +9,8 @@ export function CreateReportPage() {
       <Card>
         <EmptyState
           icon={FilePlus}
-          title="Formulario del informe en diseño"
-          description="Esta pantalla se construirá a partir de los mockups del informe. Ya cuenta con los catálogos (sexo, estado civil, parentesco, ubicación…) y las trabajadoras sociales para alimentar sus campos."
+          title="Próximamente"
+          description="Aquí podrá elaborar el informe social de cada paciente y su grupo familiar."
         />
       </Card>
     </>
