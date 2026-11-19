@@ -15,6 +15,9 @@ dist/
 backend/src/TrabajoSocial.Api/wwwroot/uploads/*
 !backend/src/TrabajoSocial.Api/wwwroot/uploads/.gitkeep
 
+# Configuración personal de Claude Code (permisos de esta máquina)
+.claude/settings.local.json
+
 # Editor / SO
 .idea/
 .DS_Store
