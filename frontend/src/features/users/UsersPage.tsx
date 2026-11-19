@@ -44,7 +44,7 @@ export function UsersPage() {
   return (
     <>
       <PageHeader title="Usuarios" description="Cree las cuentas de acceso, asigne su perfil y vincúlelas con una trabajadora social." />
-      <CrudManager resource={resource} permissions={permissions} />
+      <CrudManager resource={resource} permissions={permissions} showHeading={false} />
       {resetTarget && (
         <ResetPasswordDialog user={resetTarget} onClose={() => setResetTarget(null)} onReset={refreshUsers} />
       )}
