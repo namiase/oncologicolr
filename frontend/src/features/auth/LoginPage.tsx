@@ -58,7 +58,7 @@ export function LoginPage() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden bg-brand-800 lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <section className="relative hidden overflow-hidden bg-brand-800 lg:flex dark:bg-brand-950 lg:flex-col lg:justify-between lg:p-12">
         <CompanyLogo size="md" className="relative" nameClassName="text-lg text-white" />
         <div className="relative max-w-md">
           <h1 className="text-3xl leading-tight font-semibold text-white">
