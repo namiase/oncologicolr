@@ -14,21 +14,28 @@ public interface IUserService
 {
     Task<PagedResult<UserDto>> GetPagedAsync(UserQuery query, CancellationToken ct = default);
     Task<UserDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<LookupItemDto>> GetRolesAsync(CancellationToken ct = default);
+    /// <param name="assignableOnly">Solo los perfiles que el usuario actual puede asignar.</param>
+    Task<IReadOnlyList<LookupItemDto>> GetRolesAsync(bool assignableOnly = false, CancellationToken ct = default);
     Task<UserDto> CreateAsync(UserCreateDto dto, CancellationToken ct = default);
     Task<UserDto> UpdateAsync(Guid id, UserUpdateDto dto, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task ResetPasswordAsync(Guid id, ResetPasswordDto dto, CancellationToken ct = default);
     Task UnlockAsync(Guid id, CancellationToken ct = default);
+    Task SetAdminDelegationAsync(Guid id, bool enabled, CancellationToken ct = default);
     Task ChangeOwnPasswordAsync(Guid userId, Guid? currentSessionId, ChangePasswordDto dto, CancellationToken ct = default);
 }
 
 /// <summary>
 /// Administración de usuarios. Reglas de protección:
 /// - Nadie puede eliminarse, desactivarse ni cambiar su propio perfil.
-/// - Siempre debe quedar al menos un administrador activo.
-/// - Cambiar perfil o estatus, restablecer la contraseña o eliminar un usuario cierra sus
-///   sesiones de inmediato (sus tokens dejan de servir).
+/// - El administrador principal (el que creó el sistema) es intocable para los demás: nadie
+///   puede modificarlo, eliminarlo, desbloquearlo ni cambiarle la contraseña. Él mismo solo
+///   puede editar su nombre y correo, y cambiar su contraseña con "Cambiar contraseña".
+/// - Solo el principal, o un administrador que él autorice, crea administradores y gestiona
+///   sus cuentas; a los autorizados solo los gestiona el principal (ver <see cref="AdminTier"/>).
+///   Como el principal siempre es un administrador activo, el sistema nunca se queda sin uno.
+/// - Cambiar perfil, estatus o autorización, restablecer la contraseña o eliminar un usuario
+///   cierra sus sesiones de inmediato (sus tokens dejan de servir).
 /// </summary>
 public sealed partial class UserService(
     IRepository<User> users,
@@ -78,12 +85,19 @@ public sealed partial class UserService(
     public Task<UserDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Project(users.Query().Where(u => u.Id == id)).FirstOrDefaultAsync(ct);
 
-    public async Task<IReadOnlyList<LookupItemDto>> GetRolesAsync(CancellationToken ct = default)
-        => await roles.Query()
-            .Where(r => r.StatusId == StatusIds.Active)
+    public async Task<IReadOnlyList<LookupItemDto>> GetRolesAsync(bool assignableOnly = false, CancellationToken ct = default)
+    {
+        var q = roles.Query().Where(r => r.StatusId == StatusIds.Active);
+        if (assignableOnly && !(await GetActorTierAsync(ct)).CanCreateAdministrators())
+        {
+            q = q.Where(r => r.Name != RoleNames.Administrator);
+        }
+
+        return await q
             .OrderBy(r => r.Name)
             .Select(r => new LookupItemDto(r.Id, r.Name, null, null, null))
             .ToListAsync(ct);
+    }
 
     public async Task<UserDto> CreateAsync(UserCreateDto dto, CancellationToken ct = default)
     {
@@ -102,7 +116,11 @@ public sealed partial class UserService(
         AddStatusError(errors, dto.StatusId);
         ThrowIfAny(errors);
 
-        await GetActiveRoleAsync(dto.RoleId, ct);
+        var role = await GetActiveRoleAsync(dto.RoleId, ct);
+        if (IsAdministratorRole(role))
+        {
+            EnsureCanCreateAdministrators(await GetActorTierAsync(ct));
+        }
 
         if (await users.Query().AnyAsync(u => u.Username == username, ct))
         {
@@ -133,6 +151,13 @@ public sealed partial class UserService(
     public async Task<UserDto> UpdateAsync(Guid id, UserUpdateDto dto, CancellationToken ct = default)
     {
         var user = await LoadAsync(id, ct);
+        var self = IsCurrentUser(id);
+        var actor = await GetActorTierAsync(ct);
+        if (!self)
+        {
+            EnsureCanManage(actor, user);
+        }
+
         var errors = new Dictionary<string, string[]>();
         AddStatusError(errors, dto.StatusId);
         ThrowIfAny(errors);
@@ -141,15 +166,14 @@ public sealed partial class UserService(
         var roleChanged = user.RoleId != dto.RoleId;
         var statusChanged = user.StatusId != dto.StatusId;
 
-        if (IsCurrentUser(id) && (roleChanged || dto.StatusId != StatusIds.Active))
+        if (self && (roleChanged || dto.StatusId != StatusIds.Active))
         {
             throw new BusinessRuleException("No puede cambiar su propio perfil ni desactivar su propia cuenta.");
         }
 
-        var staysActiveAdmin = newRole.Name == RoleNames.Administrator && dto.StatusId == StatusIds.Active;
-        if (IsActiveAdministrator(user) && !staysActiveAdmin)
+        if (roleChanged && IsAdministratorRole(newRole))
         {
-            await EnsureAnotherActiveAdministratorAsync(id, ct);
+            EnsureCanCreateAdministrators(actor);
         }
 
         var email = NormalizeEmail(dto.Email);
@@ -159,6 +183,12 @@ public sealed partial class UserService(
         user.Email = email;
         user.RoleId = dto.RoleId;
         user.StatusId = dto.StatusId;
+        if (!IsAdministratorRole(newRole))
+        {
+            // La autorización para crear administradores solo existe con ese perfil.
+            user.CanManageAdministrators = false;
+        }
+
         await LinkSocialWorkerAsync(id, dto.SocialWorkerId, ct);
 
         if (roleChanged || statusChanged)
@@ -179,10 +209,7 @@ public sealed partial class UserService(
             throw new BusinessRuleException("No puede eliminar su propio usuario.");
         }
 
-        if (IsActiveAdministrator(user))
-        {
-            await EnsureAnotherActiveAdministratorAsync(id, ct);
-        }
+        EnsureCanManage(await GetActorTierAsync(ct), user);
 
         await LinkSocialWorkerAsync(id, null, ct);
         await sessions.EndAllForUserAsync(id, SessionEndReasons.UserDeleted, null, ct);
@@ -198,6 +225,7 @@ public sealed partial class UserService(
         }
 
         var user = await LoadAsync(id, ct);
+        EnsureCanManage(await GetActorTierAsync(ct), user);
         if (PasswordPolicy.Validate(dto.NewPassword, user.Username) is { } error)
         {
             throw new ValidationException("newPassword", error);
@@ -214,8 +242,45 @@ public sealed partial class UserService(
     public async Task UnlockAsync(Guid id, CancellationToken ct = default)
     {
         var user = await LoadAsync(id, ct);
+        if (!IsCurrentUser(id))
+        {
+            EnsureCanManage(await GetActorTierAsync(ct), user);
+        }
+
         user.AccessFailedCount = 0;
         user.LockoutEnd = null;
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// El principal autoriza (o deja de autorizar) a un administrador para crear administradores
+    /// y gestionar sus cuentas. Cierra las sesiones del usuario para que entre con el cambio.
+    /// </summary>
+    public async Task SetAdminDelegationAsync(Guid id, bool enabled, CancellationToken ct = default)
+    {
+        if (await GetActorTierAsync(ct) != AdminTier.Principal)
+        {
+            throw new BusinessRuleException("Solo el administrador principal puede autorizar a otros administradores.");
+        }
+
+        var user = await LoadAsync(id, ct);
+        if (user.IsSuperAdmin)
+        {
+            throw new BusinessRuleException("El administrador principal ya tiene todos los permisos.");
+        }
+
+        if (enabled && !IsAdministratorRole(user.Role))
+        {
+            throw new BusinessRuleException("Solo se puede autorizar a usuarios con el perfil Administrador.");
+        }
+
+        if (user.CanManageAdministrators == enabled)
+        {
+            return;
+        }
+
+        user.CanManageAdministrators = enabled;
+        await sessions.EndAllForUserAsync(id, SessionEndReasons.AccountChanged, null, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -266,6 +331,9 @@ public sealed partial class UserService(
             LastLoginAt = u.LastLoginAt,
             IsLockedOut = u.LockoutEnd != null && u.LockoutEnd > now,
             MustChangePassword = u.MustChangePassword,
+            IsAdministrator = u.Role.Name == RoleNames.Administrator,
+            IsSuperAdmin = u.IsSuperAdmin,
+            CanManageAdministrators = u.CanManageAdministrators,
             SocialWorkerId = u.SocialWorker != null ? u.SocialWorker.Id : null,
             SocialWorkerName = u.SocialWorker != null ? u.SocialWorker.FirstNames + " " + u.SocialWorker.LastNames : null,
             CreatedAt = u.CreatedAt,
@@ -285,23 +353,58 @@ public sealed partial class UserService(
 
     private bool IsCurrentUser(Guid id) => currentUser.UserId == id;
 
-    // Misma definición que EnsureAnotherActiveAdministratorAsync (y que el login): usuario y perfil activos.
-    private static bool IsActiveAdministrator(User user)
-        => user.StatusId == StatusIds.Active
-           && user.Role.Name == RoleNames.Administrator
-           && user.Role.StatusId == StatusIds.Active;
+    private static bool IsAdministratorRole(Role role) => role.Name == RoleNames.Administrator;
 
-    private async Task EnsureAnotherActiveAdministratorAsync(Guid excludedUserId, CancellationToken ct)
+    /// <summary>
+    /// Nivel del usuario que hace la petición. Sin usuario, o con la cuenta inactiva, no tiene
+    /// ningún privilegio sobre administradores.
+    /// </summary>
+    private async Task<AdminTier> GetActorTierAsync(CancellationToken ct)
     {
-        var another = await users.Query().AnyAsync(u =>
-            u.Id != excludedUserId
-            && u.StatusId == StatusIds.Active
-            && u.Role.Name == RoleNames.Administrator
-            && u.Role.StatusId == StatusIds.Active, ct);
-
-        if (!another)
+        if (currentUser.UserId is not { } actorId)
         {
-            throw new BusinessRuleException("Debe quedar al menos un administrador activo en el sistema.");
+            return AdminTier.None;
+        }
+
+        var actor = await users.Query()
+            .Where(u => u.Id == actorId && u.StatusId == StatusIds.Active)
+            .Select(u => new
+            {
+                u.IsSuperAdmin,
+                u.CanManageAdministrators,
+                IsAdministrator = u.Role.Name == RoleNames.Administrator && u.Role.StatusId == StatusIds.Active
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return actor is null
+            ? AdminTier.None
+            : AdminTiers.Of(actor.IsSuperAdmin, actor.CanManageAdministrators, actor.IsAdministrator);
+    }
+
+    /// <summary>Una cuenta de administrador solo la gestiona alguien de nivel superior.</summary>
+    private static void EnsureCanManage(AdminTier actor, User target)
+    {
+        var tier = AdminTiers.Of(target);
+        if (tier == AdminTier.Principal)
+        {
+            throw new BusinessRuleException(
+                "El administrador principal no se puede modificar, eliminar ni cambiarle la contraseña.");
+        }
+
+        if (tier != AdminTier.None && actor <= tier)
+        {
+            throw new BusinessRuleException(tier == AdminTier.Delegate
+                ? "Solo el administrador principal puede modificar a los administradores que él autorizó."
+                : "Solo el administrador principal o un administrador autorizado por él puede modificar cuentas de administrador.");
+        }
+    }
+
+    private static void EnsureCanCreateAdministrators(AdminTier actor)
+    {
+        if (!actor.CanCreateAdministrators())
+        {
+            throw new ValidationException("roleId",
+                "Solo el administrador principal o un administrador autorizado por él puede crear administradores.");
         }
     }
 

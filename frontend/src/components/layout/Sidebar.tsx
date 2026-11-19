@@ -112,7 +112,7 @@ function CollapsedMenuGroup({ menu }: { menu: MenuItem }) {
           style={{ top: position.top, left: position.left }}
           className="fixed z-50 w-56 rounded-xl bg-surface p-2 shadow-lg ring-1 ring-slate-200"
         >
-          <p className="px-3 pt-1 pb-2 text-xs font-semibold tracking-wide text-slate-400 uppercase">{menu.title}</p>
+          <p className="px-3 pt-1 pb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">{menu.title}</p>
           <ul className="space-y-1">
             {menu.children.map((child) => (
               <li key={child.id}>
@@ -191,12 +191,12 @@ export function Sidebar({ collapsed = false, onToggleCollapse, onNavigate }: Sid
               <>
                 <PanelLeftClose className="size-5 shrink-0" aria-hidden />
                 <span className="flex-1 text-left">Reducir menú</span>
-                <span className="text-xs text-slate-400">v1.0</span>
+                <span className="text-xs text-slate-500">v1.0</span>
               </>
             )}
           </button>
         ) : (
-          <p className="px-2 py-1 text-xs text-slate-400">Versión 1.0</p>
+          <p className="px-2 py-1 text-xs text-slate-500">Versión 1.0</p>
         )}
       </div>
     </div>

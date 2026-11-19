@@ -76,15 +76,16 @@ public sealed class DbSeeder(
 
     private async Task<Dictionary<string, Menu>> SeedMenusAsync(CancellationToken ct)
     {
+        // Títulos en mayúscula solo al inicio, igual que los títulos de cada página.
         var definitions = new (string Code, string Title, string? Path, string Icon, int Order, string? Parent)[]
         {
             (MenuCodes.Home, "Inicio", "/inicio", "house", 1, null),
-            (MenuCodes.CreateReport, "Crear Informe", "/informes/nuevo", "file-plus", 2, null),
+            (MenuCodes.CreateReport, "Crear informe", "/informes/nuevo", "file-plus", 2, null),
             (MenuCodes.Configuration, "Configuración", null, "settings", 3, null),
-            (MenuCodes.MasterTables, "Tablas Maestras", "/configuracion/tablas-maestras", "database", 1, MenuCodes.Configuration),
-            (MenuCodes.SocialWorkers, "Trabajadoras Sociales", "/configuracion/trabajadoras-sociales", "users", 2, MenuCodes.Configuration),
+            (MenuCodes.MasterTables, "Tablas maestras", "/configuracion/tablas-maestras", "database", 1, MenuCodes.Configuration),
+            (MenuCodes.SocialWorkers, "Trabajadoras sociales", "/configuracion/trabajadoras-sociales", "users", 2, MenuCodes.Configuration),
             (MenuCodes.Users, "Usuarios", "/configuracion/usuarios", "user-cog", 3, MenuCodes.Configuration),
-            (MenuCodes.CompanySettings, "Empresa y Logo", "/configuracion/empresa", "building-2", 4, MenuCodes.Configuration),
+            (MenuCodes.CompanySettings, "Empresa y logo", "/configuracion/empresa", "building-2", 4, MenuCodes.Configuration),
             (MenuCodes.Reports, "Reportes", "/reportes", "chart-column", 4, null)
         };
 
@@ -156,10 +157,23 @@ public sealed class DbSeeder(
         await db.SaveChangesAsync(ct);
     }
 
+    /// <summary>
+    /// Crea el administrador principal (el que crea el sistema). En bases anteriores a la
+    /// jerarquía de administradores, marca como principal a la cuenta admin ya existente.
+    /// </summary>
     private async Task SeedAdminAsync(Role adminRole, CancellationToken ct)
     {
-        if (await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Username == seed.AdminUsername, ct))
+        var hasPrincipal = await db.Users.AnyAsync(u => u.IsSuperAdmin, ct);
+        var existing = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Username == seed.AdminUsername, ct);
+        if (existing is not null)
         {
+            if (!hasPrincipal && !existing.IsDeleted && existing.RoleId == adminRole.Id)
+            {
+                existing.IsSuperAdmin = true;
+                await db.SaveChangesAsync(ct);
+                logger.LogInformation("Usuario '{Username}' marcado como administrador principal.", seed.AdminUsername);
+            }
+
             return;
         }
 
@@ -170,7 +184,13 @@ public sealed class DbSeeder(
             return;
         }
 
-        var admin = new User { Username = seed.AdminUsername, FullName = seed.AdminFullName, RoleId = adminRole.Id };
+        var admin = new User
+        {
+            Username = seed.AdminUsername,
+            FullName = seed.AdminFullName,
+            RoleId = adminRole.Id,
+            IsSuperAdmin = !hasPrincipal
+        };
         admin.PasswordHash = passwordHasher.Hash(admin, seed.AdminPassword);
         db.Users.Add(admin);
         await db.SaveChangesAsync(ct);

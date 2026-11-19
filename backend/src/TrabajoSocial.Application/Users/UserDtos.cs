@@ -19,6 +19,15 @@ public sealed record UserDto
     /// <summary>Tiene una contraseña asignada por un administrador que aún no cambió.</summary>
     public bool MustChangePassword { get; init; }
 
+    /// <summary>Tiene el perfil Administrador.</summary>
+    public bool IsAdministrator { get; init; }
+
+    /// <summary>Es el administrador principal (el que creó el sistema).</summary>
+    public bool IsSuperAdmin { get; init; }
+
+    /// <summary>El principal lo autorizó para crear administradores y gestionar sus cuentas.</summary>
+    public bool CanManageAdministrators { get; init; }
+
     public Guid? SocialWorkerId { get; init; }
     public string? SocialWorkerName { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -81,6 +90,12 @@ public sealed class ResetPasswordDto
     [Required(ErrorMessage = "La nueva contraseña es obligatoria.")]
     [MaxLength(PasswordPolicy.MaxLength, ErrorMessage = UserCreateDto.PasswordTooLong)]
     public string NewPassword { get; set; } = string.Empty;
+}
+
+public sealed class AdminDelegationDto
+{
+    /// <summary>true: puede crear administradores y gestionar sus cuentas.</summary>
+    public bool Enabled { get; set; }
 }
 
 public sealed class ChangePasswordDto

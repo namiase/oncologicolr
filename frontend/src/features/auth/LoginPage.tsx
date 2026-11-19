@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { CompanyLogo } from '@/components/layout/CompanyLogo'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useBranding } from '@/features/branding/brandingApi'
+import { useDocumentTitle } from '@/features/branding/useDocumentTitle'
 import { getErrorMessage } from '@/lib/errors'
 import { applySession, markActivity } from '@/lib/sessionSync'
 import { useAuthStore } from '@/stores/authStore'
@@ -33,6 +34,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { data: branding } = useBranding()
+  useDocumentTitle('Iniciar sesión')
 
   const {
     register,
@@ -56,9 +58,7 @@ export function LoginPage() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden bg-brand-800 lg:flex lg:flex-col lg:justify-between lg:p-12">
-        <div className="absolute -top-24 -right-24 size-96 rounded-full bg-brand-700/60" aria-hidden />
-        <div className="absolute -bottom-32 -left-16 size-[28rem] rounded-full bg-brand-900/50" aria-hidden />
+      <section className="relative hidden overflow-hidden bg-brand-800 lg:flex dark:bg-brand-950 lg:flex-col lg:justify-between lg:p-12">
         <CompanyLogo size="md" className="relative" nameClassName="text-lg text-white" />
         <div className="relative max-w-md">
           <h1 className="text-3xl leading-tight font-semibold text-white">
@@ -119,7 +119,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-700"
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

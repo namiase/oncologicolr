@@ -12,7 +12,7 @@ export function SocialWorkersPage() {
         title="Trabajadoras sociales"
         description="Nombres, cédula, N° de registro ANTS, colegio y año de grado."
       />
-      <CrudManager resource={socialWorkerResource} permissions={permissions} />
+      <CrudManager resource={socialWorkerResource} permissions={permissions} showHeading={false} />
     </>
   )
 }

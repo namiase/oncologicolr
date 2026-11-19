@@ -25,6 +25,18 @@ public class User : BaseEntity, IHasStatus
     /// </summary>
     public bool MustChangePassword { get; set; }
 
+    /// <summary>
+    /// Administrador principal: el que creó el sistema (lo marca el seeder; hay uno solo).
+    /// Nadie más puede modificarlo, eliminarlo ni cambiarle la contraseña.
+    /// </summary>
+    public bool IsSuperAdmin { get; set; }
+
+    /// <summary>
+    /// Autorizado por el administrador principal para crear administradores y gestionar sus
+    /// cuentas. Solo tiene efecto con el perfil Administrador.
+    /// </summary>
+    public bool CanManageAdministrators { get; set; }
+
     // Los actualiza el login: no cuentan como edición del usuario en la auditoría.
     [NotAudited] public DateTime? LastLoginAt { get; set; }
     [NotAudited] public int AccessFailedCount { get; set; }

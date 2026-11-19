@@ -18,9 +18,16 @@ import { useCrudList, useCrudMutations, useLookup, useStatuses } from './useCrud
 interface CrudManagerProps<TItem extends CrudEntity, TForm extends FieldValues> {
   resource: CrudResource<TItem, TForm>
   permissions: CrudPermissions
+  /**
+   * Muestra el título y la descripción del recurso en la tarjeta. Apáguelo cuando la página
+   * ya tiene su propio encabezado con el mismo nombre (evita repetir "Usuarios / Usuarios").
+   */
+  showHeading?: boolean
 }
 
 type Editing<TItem> = { item: TItem | null } | null
+
+const recordCount = (n: number) => `${formatNumber(n)} ${n === 1 ? 'registro' : 'registros'}`
 
 /**
  * Pantalla CRUD genérica: búsqueda, filtros, tabla ordenable, paginación,
@@ -30,6 +37,7 @@ type Editing<TItem> = { item: TItem | null } | null
 export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>({
   resource,
   permissions,
+  showHeading = true,
 }: CrudManagerProps<TItem, TForm>) {
   const [search, setSearch] = useState('')
   const [statusId, setStatusId] = useState('')
@@ -105,13 +113,19 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
   return (
     <Card>
       <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">{resource.title}</h2>
-          <p className="mt-0.5 text-sm text-slate-500">
-            {resource.description ?? 'Administre los registros de esta tabla.'}
-            {list.data && <span className="ml-1">· {formatNumber(list.data.totalCount)} registro(s)</span>}
+        {showHeading ? (
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">{resource.title}</h2>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {resource.description ?? 'Administre los registros de esta tabla.'}
+              {list.data && <span className="ml-1">· {recordCount(list.data.totalCount)}</span>}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500 sm:self-center">
+            {list.data ? recordCount(list.data.totalCount) : ' '}
           </p>
-        </div>
+        )}
         {permissions.canCreate && (
           <Button icon={<Plus className="size-4" />} onClick={() => setEditing({ item: null })}>
             {texts.newLabel}
@@ -195,6 +209,7 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
             onDelete={setDeleting}
             getLabel={resource.getLabel}
             rowActions={resource.rowActions}
+            canEditItem={resource.canEditItem}
             canDeleteItem={resource.canDeleteItem}
           />
           {list.data && (

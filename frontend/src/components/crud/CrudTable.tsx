@@ -16,6 +16,7 @@ interface CrudTableProps<TItem extends CrudEntity> {
   onDelete: (item: TItem) => void
   getLabel: (item: TItem) => string
   rowActions?: (item: TItem) => RowAction[]
+  canEditItem?: (item: TItem) => boolean
   canDeleteItem?: (item: TItem) => boolean
 }
 
@@ -32,12 +33,13 @@ export function CrudTable<TItem extends CrudEntity>({
   onDelete,
   getLabel,
   rowActions,
+  canEditItem,
   canDeleteItem,
 }: CrudTableProps<TItem>) {
   const hasActions = permissions.canUpdate || permissions.canDelete || Boolean(rowActions)
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className={cn('min-w-full divide-y divide-slate-200 text-sm transition-opacity', refreshing && 'opacity-60')}>
         <thead className="bg-slate-50">
           <tr>
@@ -93,7 +95,7 @@ export function CrudTable<TItem extends CrudEntity>({
                 </tr>
               ))
             : items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/70">
+                <tr key={item.id} className="hover:bg-hover/70">
                   {columns.map((column) => (
                     <td
                       key={column.key}
@@ -119,7 +121,7 @@ export function CrudTable<TItem extends CrudEntity>({
                             {action.icon}
                           </Button>
                         ))}
-                        {permissions.canUpdate && (
+                        {permissions.canUpdate && (canEditItem?.(item) ?? true) && (
                           <Button variant="ghost" size="icon" onClick={() => onEdit(item)} aria-label={`Editar ${getLabel(item)}`} title="Editar">
                             <Pencil className="size-4" />
                           </Button>

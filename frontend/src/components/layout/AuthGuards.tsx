@@ -51,6 +51,7 @@ export function RequireMenu({ code, children }: { code: string; children: ReactN
     return (
       <EmptyState
         icon={ShieldX}
+        titleAs="h1"
         title="Acceso restringido"
         description="Su perfil no tiene permiso para ver esta sección. Si cree que es un error, contacte al administrador."
       />

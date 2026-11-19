@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TrabajoSocial.Application.Common.Exceptions;
 using TrabajoSocial.Application.Common.Interfaces;
+using TrabajoSocial.Application.Users;
 using TrabajoSocial.Domain.Constants;
 using TrabajoSocial.Domain.Entities.Security;
 
@@ -266,8 +267,10 @@ public sealed class AuthService(
     private async Task<CurrentUserDto> ToDtoAsync(User user, CancellationToken ct)
     {
         var menus = await menuTreeBuilder.BuildAsync(user.RoleId, ct);
+        var tier = AdminTiers.Of(user);
         return new CurrentUserDto(
-            user.Id, user.Username, user.FullName, user.Email, user.RoleId, user.Role.Name, user.MustChangePassword, menus);
+            user.Id, user.Username, user.FullName, user.Email, user.RoleId, user.Role.Name, user.MustChangePassword,
+            tier == AdminTier.Principal, tier.CanCreateAdministrators(), menus);
     }
 
     private static string? Truncate(string? value, int max)

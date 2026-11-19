@@ -20,6 +20,9 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(e => e.Username).IsUnique().HasFilter(NotDeleted);
         builder.HasIndex(e => e.Email).IsUnique().HasFilter(NotNullAndNotDeleted(nameof(User.Email)));
 
+        // Un solo administrador principal.
+        builder.HasIndex(e => e.IsSuperAdmin).IsUnique().HasFilter($"[{nameof(User.IsSuperAdmin)}] = 1");
+
         builder.HasOne(e => e.Role).WithMany(r => r.Users).HasForeignKey(e => e.RoleId);
         builder.HasOne(e => e.Status).WithMany().HasForeignKey(e => e.StatusId);
     }

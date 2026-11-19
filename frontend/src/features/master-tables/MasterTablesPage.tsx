@@ -41,6 +41,7 @@ export function MasterTablesPage() {
   if (definitions.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudieron cargar las tablas maestras"
         description={getErrorMessage(definitions.error)}
         action={
@@ -73,7 +74,7 @@ export function MasterTablesPage() {
           <Card className="sticky top-24 p-2">
             {groups.map(([group, items]) => (
               <div key={group} className="py-1">
-                <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">{group}</p>
+                <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{group}</p>
                 <ul>
                   {items.map((d) => (
                     <li key={d.key}>

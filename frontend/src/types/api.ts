@@ -52,6 +52,10 @@ export interface CurrentUser {
   roleName: string
   /** Tiene una contraseña asignada por un administrador: debe cambiarla antes de usar el sistema. */
   mustChangePassword: boolean
+  /** Administrador principal (el que creó el sistema): nadie más puede modificar su cuenta. */
+  isSuperAdmin: boolean
+  /** Puede crear administradores y gestionar sus cuentas (el principal o un autorizado por él). */
+  canManageAdministrators: boolean
   menus: MenuItem[]
 }
 

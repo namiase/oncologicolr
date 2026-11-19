@@ -11,7 +11,7 @@ interface CompanyLogoProps {
 
 const sizes = { sm: 'h-8 max-w-8', md: 'h-10 max-w-28', lg: 'h-16 max-w-48' }
 
-/** Logo corporativo configurable desde Configuración → Empresa y Logo (con logo por defecto). */
+/** Logo corporativo configurable desde Configuración → Empresa y logo (con logo por defecto). */
 export function CompanyLogo({ showName = true, size = 'md', className, nameClassName }: CompanyLogoProps) {
   const { data } = useBranding()
   const [failedUrl, setFailedUrl] = useState<string | null>(null)

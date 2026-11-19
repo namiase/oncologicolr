@@ -57,7 +57,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
               type="button"
               onClick={onClose}
               disabled={!dismissible}
-              className="-m-1 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+              className="-m-2.5 rounded-md p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
               aria-label="Cerrar"
             >
               <X className="size-5" />

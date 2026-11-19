@@ -1,9 +1,9 @@
-import { KeyRound, LockOpen } from 'lucide-react'
+import { KeyRound, LockOpen, ShieldCheck, ShieldOff } from 'lucide-react'
 import { z } from 'zod'
 import type { CrudEntity, CrudResource, RowAction } from '@/components/crud'
 import { Badge, StatusBadge } from '@/components/ui/Badge'
 import { formatDateTime } from '@/lib/format'
-import { ACTIVE_STATUS_ID } from '@/types/api'
+import { ACTIVE_STATUS_ID, type CurrentUser } from '@/types/api'
 import { containsUsername, PASSWORD_HINT, passwordRule, USERNAME_IN_PASSWORD } from './passwordRules'
 
 export interface UserItem extends CrudEntity {
@@ -17,9 +17,21 @@ export interface UserItem extends CrudEntity {
   lastLoginAt: string | null
   isLockedOut: boolean
   mustChangePassword: boolean
+  isAdministrator: boolean
+  /** Administrador principal (el que creó el sistema). */
+  isSuperAdmin: boolean
+  /** El principal lo autorizó para crear administradores y gestionar sus cuentas. */
+  canManageAdministrators: boolean
   socialWorkerId: string | null
   socialWorkerName: string | null
 }
+
+/**
+ * Misma jerarquía que el backend (AdminTier): 0 no administrador, 1 administrador,
+ * 2 autorizado por el principal, 3 principal.
+ */
+const tierOf = (u: UserItem) => (u.isSuperAdmin ? 3 : !u.isAdministrator ? 0 : u.canManageAdministrators ? 2 : 1)
+const actorTierOf = (u: CurrentUser | null) => (u?.isSuperAdmin ? 3 : u?.canManageAdministrators ? 2 : 1)
 
 export interface UserForm {
   username: string
@@ -62,19 +74,26 @@ const createSchema = z
   .refine((v) => !containsUsername(v.password, v.username), { path: ['password'], message: USERNAME_IN_PASSWORD })
 
 interface UsersResourceOptions {
-  currentUserId: string | undefined
+  currentUser: CurrentUser | null
   canUpdate: boolean
   onResetPassword: (user: UserItem) => void
   onUnlock: (user: UserItem) => void
+  onToggleDelegation: (user: UserItem) => void
 }
 
 /** Usuarios del sistema con el mismo CRUD genérico de las tablas maestras. */
 export function buildUsersResource({
-  currentUserId,
+  currentUser,
   canUpdate,
   onResetPassword,
   onUnlock,
+  onToggleDelegation,
 }: UsersResourceOptions): CrudResource<UserItem, UserForm> {
+  const currentUserId = currentUser?.id
+  const actorTier = actorTierOf(currentUser)
+  // Una cuenta de administrador solo la gestiona alguien de nivel superior (el API lo valida igual).
+  const canManage = (u: UserItem) => u.id !== currentUserId && (tierOf(u) === 0 || actorTier > tierOf(u))
+
   return {
     title: 'Usuarios',
     singular: 'Usuario',
@@ -97,7 +116,18 @@ export function buildUsersResource({
         ),
       },
       { key: 'fullName', header: 'Nombre', sortKey: 'fullname' },
-      { key: 'roleName', header: 'Perfil', sortKey: 'role' },
+      {
+        key: 'roleName',
+        header: 'Perfil',
+        sortKey: 'role',
+        render: (u) => (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span>{u.roleName}</span>
+            {u.isSuperAdmin && <Badge tone="info">Principal</Badge>}
+            {!u.isSuperAdmin && u.isAdministrator && u.canManageAdministrators && <Badge tone="info">Crea administradores</Badge>}
+          </div>
+        ),
+      },
       { key: 'socialWorkerName', header: 'Trabajadora social', hideOnMobile: true, render: (u) => u.socialWorkerName ?? '—' },
       {
         key: 'lastLoginAt',
@@ -133,7 +163,18 @@ export function buildUsersResource({
       },
       { name: 'fullName', label: 'Nombre completo', type: 'text', required: true, maxLength: 150 },
       { name: 'email', label: 'Correo electrónico', type: 'text', maxLength: 150, autoComplete: 'off' },
-      { name: 'roleId', label: 'Perfil', type: 'lookup', required: true, lookupPath: '/users/roles' },
+      {
+        name: 'roleId',
+        label: 'Perfil',
+        type: 'lookup',
+        required: true,
+        // Sin autorización, el perfil Administrador no aparece entre las opciones.
+        lookupPath: '/users/roles?assignable=true',
+        currentOption: (u) => ({ value: u.roleId, label: u.roleName }),
+        hint: currentUser?.canManageAdministrators
+          ? undefined
+          : 'Solo el administrador principal, o quien él autorice, puede asignar el perfil Administrador.',
+      },
       { name: 'statusId', label: 'Estatus', type: 'status', required: true },
       {
         name: 'socialWorkerId',
@@ -188,12 +229,30 @@ export function buildUsersResource({
     },
     getLabel: (u) => u.username,
     filters: { status: true, parent: { label: 'Perfil', lookupPath: '/users/roles', param: 'roleId' } },
-    canDeleteItem: (u) => u.id !== currentUserId,
+    // Cada quien puede corregir su nombre y correo; las demás cuentas, según la jerarquía.
+    canEditItem: (u) => u.id === currentUserId || canManage(u),
+    canDeleteItem: canManage,
     rowActions: (u) => {
-      if (!canUpdate || u.id === currentUserId) return []
-      const actions: RowAction[] = [
-        { key: 'reset', label: 'Restablecer contraseña', icon: <KeyRound className="size-4" />, onClick: () => onResetPassword(u) },
-      ]
+      if (!canUpdate || !canManage(u)) return []
+      const actions: RowAction[] = []
+      if (currentUser?.isSuperAdmin && u.isAdministrator) {
+        actions.push(
+          u.canManageAdministrators
+            ? {
+                key: 'delegation',
+                label: 'Quitar autorización para crear administradores',
+                icon: <ShieldOff className="size-4" />,
+                onClick: () => onToggleDelegation(u),
+              }
+            : {
+                key: 'delegation',
+                label: 'Autorizar para crear administradores',
+                icon: <ShieldCheck className="size-4" />,
+                onClick: () => onToggleDelegation(u),
+              },
+        )
+      }
+      actions.push({ key: 'reset', label: 'Restablecer contraseña', icon: <KeyRound className="size-4" />, onClick: () => onResetPassword(u) })
       if (u.isLockedOut) {
         actions.push({ key: 'unlock', label: 'Desbloquear', icon: <LockOpen className="size-4" />, onClick: () => onUnlock(u) })
       }

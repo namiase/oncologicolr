@@ -149,12 +149,21 @@ En *Configuración → Usuarios* (permiso `USERS`) se pueden crear, editar y eli
 | Cambiar perfil o estatus | Cierra de inmediato las sesiones del usuario, que debe volver a entrar con sus nuevos permisos. |
 | Restablecer contraseña | Asigna una temporal, desbloquea la cuenta y cierra sus sesiones. El usuario debe cambiarla al entrar. |
 | Desbloquear | Quita el bloqueo por intentos fallidos. |
+| Autorizar para crear administradores (botón de escudo) | Solo lo ve el administrador principal, en las filas de administradores. Cierra las sesiones del usuario para que entre con el permiso nuevo. |
 | Cambiar contraseña (botón de llave del encabezado) | Cada usuario cambia la suya. Su sesión actual sigue abierta y se cierran las de otros equipos. |
 
 **Protecciones:**
 
 - Nadie puede eliminarse, desactivarse ni cambiar su propio perfil.
-- Siempre queda al menos un administrador activo.
+- Jerarquía de administradores (`AdminTier`; el API la valida y la pantalla oculta lo que no se puede hacer):
+
+  | Nivel | Quién es | Qué puede hacer con otras cuentas |
+  |---|---|---|
+  | Administrador principal | El que creó el sistema (`admin` del seeder; hay uno solo, columna `IsSuperAdmin`). | Todo, incluido autorizar a otros administradores. Nadie más puede modificarlo, eliminarlo, desbloquearlo ni cambiarle la contraseña; él mismo solo edita su nombre y correo, y cambia su contraseña con "Cambiar contraseña". |
+  | Administrador autorizado | Un administrador al que el principal autorizó (`CanManageAdministrators`). | Crear administradores y gestionar las cuentas de los administradores normales. A otro autorizado solo lo gestiona el principal. |
+  | Administrador | Perfil Administrador sin autorización. | Gestionar los usuarios que no son administradores. No ve el perfil Administrador al crear o editar. |
+
+- Como el principal no se puede desactivar ni eliminar, el sistema nunca se queda sin un administrador activo.
 - Iniciar sesión no cuenta como edición: el último acceso y los intentos fallidos no cambian "modificado por" (propiedades marcadas con `[NotAudited]`).
 - El nombre de usuario y el correo no se pueden repetir, sin importar mayúsculas o espacios. El correo es opcional, y varias cuentas pueden quedar sin correo.
 
@@ -181,7 +190,7 @@ Para **agregar un catálogo nuevo**:
    dotnet ef migrations add AgregarEtnia -p src/TrabajoSocial.Infrastructure -s src/TrabajoSocial.Api -o Persistence/Migrations
    ```
 
-No hace falta código de frontend: la pantalla aparece sola en *Configuración → Tablas Maestras*.
+No hace falta código de frontend: la pantalla aparece sola en *Configuración → Tablas maestras*.
 
 ## Pruebas
 

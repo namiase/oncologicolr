@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { KeyRound, LogOut, Menu as MenuIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -6,8 +6,10 @@ import { Spinner } from '@/components/ui/Feedback'
 import { cn } from '@/lib/cn'
 import { ChangePasswordDialog } from '@/features/auth/ChangePasswordDialog'
 import { endSession } from '@/features/auth/session'
+import { useDocumentTitle } from '@/features/branding/useDocumentTitle'
 import { useAuthStore } from '@/stores/authStore'
 import type { MenuItem } from '@/types/api'
+import { MobileDrawer } from './MobileDrawer'
 import { SessionWatcher } from './SessionWatcher'
 import { Sidebar } from './Sidebar'
 import { ThemeToggle } from './ThemeToggle'
@@ -48,9 +50,11 @@ export function AppLayout() {
   const user = useAuthStore((s) => s.user)
   const { pathname } = useLocation()
   const trail = findTrail(user?.menus ?? [], pathname) ?? []
+  useDocumentTitle(trail.at(-1)?.title)
 
   // Al cerrar sesión, ProtectedRoute redirige al login automáticamente.
   const logout = () => void endSession()
+  const closeMobile = useCallback(() => setMobileOpen(false), [])
 
   const toggleCollapsed = () => {
     const next = !collapsed
@@ -75,6 +79,13 @@ export function AppLayout() {
 
   return (
     <div className="min-h-svh">
+      {/* Primer elemento al tabular: permite saltar el menú e ir directo al contenido. */}
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-brand-700 focus:shadow-lg"
+      >
+        Saltar al contenido
+      </a>
       <SessionWatcher />
       {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
       {/* Sidebar fijo en escritorio */}
@@ -88,23 +99,14 @@ export function AppLayout() {
       </aside>
 
       {/* Drawer en móvil */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-xl">
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-3"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Cerrar menú"
-            >
-              <X className="size-5" />
-            </Button>
-          </aside>
-        </div>
-      )}
+      <MobileDrawer open={mobileOpen} onClose={closeMobile} label="Menú">
+        <aside className="relative h-full">
+          <Sidebar onNavigate={closeMobile} />
+          <Button variant="ghost" size="icon" className="absolute right-2 top-3" onClick={closeMobile} aria-label="Cerrar menú">
+            <X className="size-5" />
+          </Button>
+        </aside>
+      </MobileDrawer>
 
       <div className={cn('transition-[padding] duration-200', collapsed ? 'lg:pl-18' : 'lg:pl-64')}>
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-surface/90 px-4 backdrop-blur sm:px-6">
@@ -132,7 +134,7 @@ export function AppLayout() {
                 <p className="text-xs leading-tight text-slate-500">{user.roleName}</p>
               </div>
               <span
-                className="flex size-9 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
+                className="hidden size-9 items-center justify-center rounded-full bg-brand-100 sm:flex text-sm font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
                 aria-hidden
               >
                 {initials(user.fullName)}
@@ -156,7 +158,7 @@ export function AppLayout() {
           )}
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+        <main id="contenido" tabIndex={-1} className="mx-auto w-full max-w-7xl px-4 py-6 focus:outline-none sm:px-6 lg:py-8">
           <Suspense fallback={<Spinner className="p-8" />}>
             <Outlet />
           </Suspense>
