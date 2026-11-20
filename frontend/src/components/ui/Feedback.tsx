@@ -46,7 +46,7 @@ export function EmptyState({ icon: Icon = Inbox, title, description, action, cla
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn('rounded-xl bg-surface shadow-sm ring-1 ring-slate-200', className)}>{children}</div>
+  return <div className={cn('rounded-[14px] bg-surface ring-1 ring-slate-200', className)}>{children}</div>
 }
 
 interface PageHeaderProps {
@@ -59,7 +59,7 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
         {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 gap-2">{actions}</div>}

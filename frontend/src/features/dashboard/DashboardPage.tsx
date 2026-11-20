@@ -31,12 +31,12 @@ function StatCard({ label, value, icon: Icon, hint }: StatCardProps) {
     <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">{value}</p>
-          {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+          <p className="text-sm font-semibold text-slate-500">{label}</p>
+          <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums">{value}</p>
+          {hint && <p className="mt-1.5 text-xs font-medium text-slate-500">{hint}</p>}
         </div>
-        <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
-          <Icon className="size-5" aria-hidden />
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+          <Icon className="size-[18px]" aria-hidden />
         </span>
       </div>
     </Card>
@@ -54,11 +54,11 @@ function QuickLink({ to, title, description, icon: Icon }: QuickLinkProps) {
   return (
     <Link
       to={to}
-      className="group flex items-start gap-3 rounded-xl bg-surface p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 dark:hover:ring-brand-700"
+      className="group flex items-start gap-3 rounded-[14px] bg-surface p-4 ring-1 ring-slate-200 transition hover:ring-brand-300 dark:hover:ring-brand-700"
     >
       <Icon className="mt-0.5 size-5 shrink-0 text-brand-700 dark:text-brand-400" aria-hidden />
       <span className="min-w-0 flex-1">
-        <span className="block font-medium text-slate-900">{title}</span>
+        <span className="block font-bold text-slate-900">{title}</span>
         <span className="mt-0.5 block text-sm text-slate-500">{description}</span>
       </span>
       <ArrowRight
@@ -86,8 +86,8 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm text-slate-500 first-letter:uppercase">{formatLongDate(now)}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+        <p className="text-sm font-medium text-slate-500 first-letter:uppercase">{formatLongDate(now)}</p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
           {greeting(now.getHours())}, {firstName}
         </h1>
       </div>
@@ -110,7 +110,7 @@ export function DashboardPage() {
       </section>
 
       <section aria-labelledby="quick-actions">
-        <h2 id="quick-actions" className="text-sm font-semibold text-slate-900">
+        <h2 id="quick-actions" className="text-base font-bold text-slate-900">
           Accesos rápidos
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

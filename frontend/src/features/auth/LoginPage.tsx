@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate, type Location } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Clock, Eye, EyeOff, LogIn } from 'lucide-react'
+import { Clock, Eye, EyeOff, LogIn, ShieldCheck } from 'lucide-react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
@@ -58,27 +58,31 @@ export function LoginPage() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden bg-brand-800 lg:flex dark:bg-brand-950 lg:flex-col lg:justify-between lg:p-12">
-        <CompanyLogo size="md" className="relative" nameClassName="text-lg text-white" />
-        <div className="relative max-w-md">
-          <h1 className="text-3xl leading-tight font-semibold text-white">
+      <section className="hidden border-r border-sidebar-line bg-sidebar lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <CompanyLogo size="md" framed nameClassName="text-lg font-bold text-white" />
+        <div className="max-w-md">
+          <p className="flex items-center gap-2 text-xs font-bold tracking-[0.06em] text-teal-300 uppercase">
+            <ShieldCheck className="size-4" aria-hidden />
+            Sistema de trabajo social
+          </p>
+          <h1 className="mt-4 text-[34px] leading-tight font-extrabold tracking-tight text-white">
             Atención social integral para pacientes oncológicos.
           </h1>
-          <p className="mt-4 text-brand-100">
+          <p className="mt-4 text-[15px] leading-relaxed text-sidebar-text">
             Registre la situación social de cada paciente y su grupo familiar, elabore informes y dé seguimiento a cada caso desde un solo lugar.
           </p>
         </div>
-        <p className="relative text-sm text-brand-200">
+        <p className="text-sm text-sidebar-muted">
           © {CURRENT_YEAR} {branding?.companyName ?? 'Trabajo Social'}
         </p>
       </section>
 
-      <section className="relative flex items-center justify-center px-4 py-12 sm:px-8">
+      <section className="relative flex items-center justify-center bg-surface px-4 py-12 sm:px-8">
         <ThemeToggle className="absolute top-4 right-4" />
         <div className="w-full max-w-sm">
           <CompanyLogo size="lg" showName={false} className="mb-3 justify-center lg:hidden" />
           <p className="mb-8 text-center text-sm text-slate-500 lg:hidden">Sistema de trabajo social para pacientes oncológicos</p>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Iniciar sesión</h2>
+          <h2 className="text-[28px] leading-tight font-bold tracking-tight text-slate-900">Iniciar sesión</h2>
           <p className="mt-1 text-sm text-slate-500">Ingrese sus credenciales para continuar.</p>
 
           <form onSubmit={onSubmit} noValidate className="mt-8 space-y-5">
@@ -127,10 +131,13 @@ export function LoginPage() {
               </div>
             </Field>
 
-            <Button type="submit" className="w-full" loading={isSubmitting} icon={<LogIn className="size-4" />}>
+            <Button type="submit" size="lg" className="w-full" loading={isSubmitting} icon={<LogIn className="size-4" />}>
               Ingresar
             </Button>
           </form>
+          <p className="mt-6 text-center text-sm text-slate-500">
+            ¿Olvidó su contraseña? Pídale a un administrador que la restablezca.
+          </p>
         </div>
       </section>
     </div>

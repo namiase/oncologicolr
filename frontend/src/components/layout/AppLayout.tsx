@@ -91,7 +91,7 @@ export function AppLayout() {
       {/* Sidebar fijo en escritorio */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 transition-[width] duration-200 lg:block',
+          'fixed inset-y-0 left-0 z-30 hidden transition-[width] duration-200 lg:block',
           collapsed ? 'w-18' : 'w-64',
         )}
       >
@@ -102,7 +102,13 @@ export function AppLayout() {
       <MobileDrawer open={mobileOpen} onClose={closeMobile} label="Menú">
         <aside className="relative h-full">
           <Sidebar onNavigate={closeMobile} />
-          <Button variant="ghost" size="icon" className="absolute right-2 top-3" onClick={closeMobile} aria-label="Cerrar menú">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2.5 text-sidebar-text hover:bg-white/10 hover:text-white"
+            onClick={closeMobile}
+            aria-label="Cerrar menú"
+          >
             <X className="size-5" />
           </Button>
         </aside>
@@ -119,7 +125,7 @@ export function AppLayout() {
               {trail.map((item, index) => (
                 <li key={item.id} className={index < trail.length - 1 ? "hidden items-center gap-2 truncate sm:flex" : "flex items-center gap-2 truncate"}>
                   {index > 0 && <span className="hidden text-slate-300 sm:inline" aria-hidden>/</span>}
-                  <span className={index === trail.length - 1 ? 'font-medium text-slate-900' : 'text-slate-500'}>
+                  <span className={index === trail.length - 1 ? 'font-semibold text-slate-900' : 'font-medium text-slate-500'}>
                     {item.title}
                   </span>
                 </li>
@@ -128,32 +134,32 @@ export function AppLayout() {
           </nav>
 
           {user && (
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-medium leading-tight text-slate-900">{user.fullName}</p>
-                <p className="text-xs leading-tight text-slate-500">{user.roleName}</p>
-              </div>
-              <span
-                className="hidden size-9 items-center justify-center rounded-full bg-brand-100 sm:flex text-sm font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
-                aria-hidden
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setChangingPassword(true)}
+                aria-label="Cambiar contraseña"
+                title="Cambiar contraseña"
               >
-                {initials(user.fullName)}
-              </span>
-              <div className="flex items-center">
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setChangingPassword(true)}
-                  aria-label="Cambiar contraseña"
-                  title="Cambiar contraseña"
+                <KeyRound className="size-5" />
+              </Button>
+              <div className="ml-2 hidden items-center gap-3 border-l border-slate-200 pl-4 sm:flex">
+                <span
+                  className="flex size-9 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+                  aria-hidden
                 >
-                  <KeyRound className="size-5" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={logout} aria-label="Cerrar sesión" title="Cerrar sesión">
-                  <LogOut className="size-5" />
-                </Button>
+                  {initials(user.fullName)}
+                </span>
+                <div>
+                  <p className="text-sm leading-tight font-bold text-slate-900">{user.fullName}</p>
+                  <p className="text-xs leading-tight text-slate-500">{user.roleName}</p>
+                </div>
               </div>
+              <Button variant="ghost" size="icon" onClick={logout} aria-label="Cerrar sesión" title="Cerrar sesión" className="ml-1">
+                <LogOut className="size-5" />
+              </Button>
             </div>
           )}
         </header>

@@ -7,12 +7,14 @@ interface CompanyLogoProps {
   size?: 'sm' | 'md' | 'lg'
   className?: string
   nameClassName?: string
+  /** Logo sobre una placa blanca: se ve bien sobre fondos oscuros, sea cual sea su color. */
+  framed?: boolean
 }
 
 const sizes = { sm: 'h-8 max-w-8', md: 'h-10 max-w-28', lg: 'h-16 max-w-48' }
 
 /** Logo corporativo configurable desde Configuración → Empresa y logo (con logo por defecto). */
-export function CompanyLogo({ showName = true, size = 'md', className, nameClassName }: CompanyLogoProps) {
+export function CompanyLogo({ showName = true, size = 'md', className, nameClassName, framed = false }: CompanyLogoProps) {
   const { data } = useBranding()
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
   const companyName = data?.companyName ?? 'Trabajo Social'
@@ -23,7 +25,7 @@ export function CompanyLogo({ showName = true, size = 'md', className, nameClass
       <img
         src={logo}
         alt={showName ? '' : companyName}
-        className={cn('w-auto shrink-0 rounded-md object-contain', sizes[size])}
+        className={cn('w-auto shrink-0 rounded-md object-contain', sizes[size], framed && 'rounded-lg bg-white p-1')}
         onError={() => setFailedUrl(data?.logoUrl ?? null)}
       />
       {showName && <span className={cn('truncate font-semibold text-slate-900', nameClassName)}>{companyName}</span>}

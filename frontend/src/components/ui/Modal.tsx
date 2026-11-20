@@ -50,7 +50,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         <div className="flex max-h-[85vh] flex-col">
           <header className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4">
             <div>
-              <h2 id={titleId} className="text-base font-semibold text-slate-900">{title}</h2>
+              <h2 id={titleId} className="text-lg font-bold text-slate-900">{title}</h2>
               {description && <p id={descriptionId} className="mt-1 text-sm text-slate-500">{description}</p>}
             </div>
             <button

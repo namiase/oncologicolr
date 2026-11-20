@@ -115,7 +115,7 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
       <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-start sm:justify-between">
         {showHeading ? (
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">{resource.title}</h2>
+            <h2 className="text-lg font-bold text-slate-900">{resource.title}</h2>
             <p className="mt-0.5 text-sm text-slate-500">
               {resource.description ?? 'Administre los registros de esta tabla.'}
               {list.data && <span className="ml-1">· {recordCount(list.data.totalCount)}</span>}
