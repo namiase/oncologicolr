@@ -44,6 +44,8 @@ interface SearchableSelectProps {
   /** Se anuncia como obligatorio (el asterisco de la etiqueta es decorativo). */
   required?: boolean
   autoFocus?: boolean
+  /** Texto del campo cerrado en lugar de la etiqueta de la opción (p. ej. el valor escrito en "Otros"). */
+  displayValue?: string
   className?: string
   ref?: Ref<HTMLButtonElement>
 }
@@ -98,6 +100,7 @@ export function SearchableSelect({
   describedBy,
   ariaLabel,
   required,
+  displayValue,
   autoFocus,
   className,
   ref,
@@ -126,7 +129,7 @@ export function SearchableSelect({
   const searchable = (others?.length ?? 0) > 0 || options.length >= SEARCH_MIN_OPTIONS
   const selectedOption = options.find((o) => o.value === value)
   const selectedOther = others?.find((o) => o.value === value)
-  const display = selectedOption ? (selectedOption.short ?? selectedOption.label) : selectedOther?.label
+  const display = displayValue || (selectedOption ? (selectedOption.short ?? selectedOption.label) : selectedOther?.label)
 
   const { items, hidden } = useMemo(() => {
     const typed = query.trim()

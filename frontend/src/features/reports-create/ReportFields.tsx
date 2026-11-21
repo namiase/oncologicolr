@@ -1,17 +1,19 @@
-import { useRef, type RefCallback } from 'react'
-import { Controller, get, useFieldArray, useWatch, type Control, type FieldErrors, type Path } from 'react-hook-form'
+import { useEffect, useRef, useState, type KeyboardEvent, type RefCallback } from 'react'
+import { Controller, get, useFieldArray, type Control, type FieldErrors, type Path } from 'react-hook-form'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
 import { SearchableSelect, type OtherOption, type SearchableOption } from '@/components/ui/SearchableSelect'
 import { describedBy } from '@/components/ui/fieldStyles'
-import { cn } from '@/lib/cn'
 import {
   emptyPhone,
   isOther,
   OTHER,
+  OTHER_OCCUPATION,
   OTHER_OPTION,
+  OTHER_PROFESSION,
   withoutGenericOther,
   type PhoneListName,
   type PhoneRow,
@@ -23,32 +25,100 @@ type FieldName = Path<ReportForm>
 const errorOf = (errors: FieldErrors<ReportForm>, name: string) =>
   (get(errors, name) as { message?: string } | undefined)?.message
 
-/**
- * Al elegir "Otro" de la lista, el foco pasa al campo para escribir el valor (que aparece en ese
- * momento): `request()` en el onChange de la lista y `ref(fieldRef)` en el campo.
- */
-function useFocusOnRequest() {
-  const pending = useRef(false)
-  const mounted = useRef<HTMLInputElement | null>(null)
-  return {
-    request: () => {
-      // Si el campo ya estaba visible, se enfoca después de que la lista devuelva el foco a su botón.
-      const element = mounted.current
-      if (element) requestAnimationFrame(() => element.focus())
-      else pending.current = true
-    },
-    ref:
-      (fieldRef: RefCallback<HTMLInputElement>): RefCallback<HTMLInputElement> =>
-      (element) => {
-        fieldRef(element)
-        mounted.current = element
-        if (element && pending.current) {
-          pending.current = false
-          element.focus()
-        }
-      },
-  }
+/** Una lista y su campo "…Other" comparten el botón: el foco de un error en el valor nuevo va a la lista. */
+const bothRefs =
+  (...refs: RefCallback<HTMLButtonElement>[]): RefCallback<HTMLButtonElement> =>
+  (element) =>
+    refs.forEach((ref) => ref(element))
+
+interface OtherValueDialogProps {
+  /** "Agregar religión" */
+  title: string
+  /** "Religión" */
+  label: string
+  initial: string
+  maxLength: number
+  placeholder?: string
+  numeric?: boolean
+  /** Mensaje de error si el texto no sirve; null si sirve. */
+  validate?: (text: string) => string | null
+  onCancel: () => void
+  onConfirm: (text: string) => void
 }
+
+/**
+ * Ventana para escribir el valor de "Otros". Se monta al abrirse y se desmonta al cerrar, así
+ * empieza siempre con el valor actual. Enter confirma sin enviar el formulario del informe.
+ */
+function OtherValueDialog({ title, label, initial, maxLength, placeholder, numeric, validate, onCancel, onConfirm }: OtherValueDialogProps) {
+  const [text, setText] = useState(initial)
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const id = 'rf-other-value'
+  const hint = 'Se agregará a la tabla maestra al guardar el informe.'
+
+  // El <dialog> enfoca su primer botón al abrirse; después se pasa el foco al campo.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => inputRef.current?.focus())
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  const confirm = () => {
+    const value = text.replace(/\s+/g, ' ').trim()
+    const problem = !value ? `Escriba ${label.toLowerCase()}.` : (validate?.(value) ?? null)
+    if (problem) {
+      setError(problem)
+      inputRef.current?.focus()
+      return
+    }
+    onConfirm(value)
+  }
+
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') return
+    event.preventDefault() // no enviar el formulario del informe que contiene la ventana
+    confirm()
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onCancel}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button onClick={confirm}>Agregar</Button>
+        </>
+      }
+    >
+      <Field id={id} label={label} error={error ?? undefined} hint={hint}>
+        <Input
+          id={id}
+          ref={inputRef}
+          value={text}
+          maxLength={maxLength}
+          inputMode={numeric ? 'numeric' : undefined}
+          placeholder={placeholder}
+          autoComplete="off"
+          invalid={Boolean(error)}
+          aria-describedby={describedBy(id, error ?? undefined, hint)}
+          onKeyDown={onKeyDown}
+          onChange={(e) => {
+            setText(numeric ? e.target.value.replace(/\D/g, '') : e.target.value)
+            setError(null)
+          }}
+        />
+      </Field>
+    </Modal>
+  )
+}
+
+/** Texto del campo cerrado cuando se eligió "Otros" y ya se escribió el valor: "Wicca (nuevo)". */
+const newValueLabel = (text: string | undefined) => (text?.trim() ? `${text.trim()} (nuevo)` : undefined)
 
 interface SelectFieldProps {
   control: Control<ReportForm>
@@ -65,7 +135,7 @@ interface SelectFieldProps {
   onValueChange?: (value: string) => void
 }
 
-/** Lista con búsqueda de una tabla maestra (sin "Otro"): sexo, país, estado, municipio… */
+/** Lista con búsqueda de una tabla maestra (sin "Otros"): sexo, país, estado, municipio… */
 export function SelectField({
   control,
   name,
@@ -110,16 +180,25 @@ export function SelectField({
 }
 
 interface ChoiceFieldProps extends SelectFieldProps {
-  /** Campo donde se escribe el valor nuevo cuando se elige "Otro". */
+  /** Campo donde queda el valor nuevo cuando se elige "Otros". */
   otherName: FieldName
   otherMax: number
   otherError?: string
   others?: OtherOption[]
 }
 
+/** Título y etiqueta de la ventana según el "Otros" elegido (en Profesión u oficio hay uno por tabla). */
+const otherDialogText = (value: string, label: string) =>
+  value === OTHER_PROFESSION
+    ? { title: 'Agregar profesión', label: 'Profesión' }
+    : value === OTHER_OCCUPATION
+      ? { title: 'Agregar oficio', label: 'Oficio' }
+      : { title: `Agregar ${label.toLowerCase()}`, label }
+
 /**
- * Lista con búsqueda y opción "Otro": al elegirla (o "Agregar «texto»" desde la búsqueda) aparece
- * un campo para escribir el valor, que al guardar se agrega a la tabla maestra.
+ * Lista con búsqueda y opción "Otros": al elegirla se abre una ventana para escribir el valor, que
+ * al guardar el informe se agrega a la tabla maestra. "Agregar «texto»" desde la búsqueda lo toma
+ * directo. Para cambiar el valor escrito se vuelve a elegir "Otros".
  */
 export function ChoiceField({
   control,
@@ -137,67 +216,64 @@ export function ChoiceField({
   emptyLabel = 'Sin indicar',
 }: ChoiceFieldProps) {
   const id = `rf-${name}`
-  const otherId = `rf-${otherName}`
-  const otherHint = 'Se agregará a la tabla maestra al guardar.'
-  const value = useWatch({ control, name }) as string
-  const otherFocus = useFocusOnRequest()
+  const message = error ?? otherError
+  // Qué "Otros" se eligió mientras la ventana está abierta (el valor no cambia hasta Agregar).
+  const [pending, setPending] = useState<string | null>(null)
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      <Field id={id} label={label} error={error}>
-        <Controller
-          control={control}
-          name={name}
-          render={({ field }) => (
-            <Controller
-              control={control}
-              name={otherName}
-              render={({ field: otherField }) => (
+    <Field id={id} label={label} error={message} className={className}>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <Controller
+            control={control}
+            name={otherName}
+            render={({ field: otherField }) => (
+              <>
                 <SearchableSelect
                   id={id}
-                  ref={field.ref}
+                  ref={bothRefs(field.ref, otherField.ref)}
                   value={field.value as string}
+                  displayValue={isOther(field.value as string) ? newValueLabel(otherField.value as string) : undefined}
                   options={withoutGenericOther(options, field.value as string)}
                   others={others}
                   placeholder={placeholder}
                   emptyLabel={emptyLabel ?? undefined}
                   loading={loading}
-                  invalid={Boolean(error)}
-                  describedBy={describedBy(id, error)}
+                  invalid={Boolean(message)}
+                  describedBy={describedBy(id, message)}
                   onBlur={field.onBlur}
                   onChange={(next, typed) => {
-                    field.onChange(next)
-                    if (typed !== undefined) otherField.onChange(typed.slice(0, otherMax))
-                    else if (isOther(next)) otherFocus.request()
+                    if (typed !== undefined) {
+                      field.onChange(next)
+                      otherField.onChange(typed.slice(0, otherMax))
+                    } else if (isOther(next)) {
+                      setPending(next)
+                    } else {
+                      field.onChange(next)
+                    }
                   }}
                 />
-              )}
-            />
-          )}
-        />
-      </Field>
-      {isOther(value) && (
-        <Field id={otherId} label={`Escriba ${label.toLowerCase()}`} error={otherError} hint={otherHint}>
-          <Controller
-            control={control}
-            name={otherName}
-            render={({ field }) => (
-              <Input
-                id={otherId}
-                ref={otherFocus.ref(field.ref)}
-                value={field.value as string}
-                maxLength={otherMax}
-                placeholder="Valor nuevo"
-                invalid={Boolean(otherError)}
-                aria-describedby={describedBy(otherId, otherError, otherHint)}
-                onBlur={field.onBlur}
-                onChange={(e) => field.onChange(e.target.value)}
-              />
+                {pending && (
+                  <OtherValueDialog
+                    {...otherDialogText(pending, label)}
+                    initial={field.value === pending ? (otherField.value as string) : ''}
+                    maxLength={otherMax}
+                    onCancel={() => setPending(null)}
+                    onConfirm={(text) => {
+                      field.onChange(pending)
+                      otherField.onChange(text)
+                      setPending(null)
+                    }}
+                  />
+                )}
+              </>
             )}
           />
-        </Field>
-      )}
-    </div>
+        )}
+      />
+    </Field>
   )
 }
 
@@ -223,8 +299,8 @@ interface PhoneListFieldProps {
 }
 
 /**
- * Teléfonos con código de área (tabla maestra, con "Otro" para agregar uno, p. ej. 0261) y el
- * número de 7 dígitos. "Agregar otro teléfono" suma filas hasta el máximo que cabe en el PDF.
+ * Teléfonos con código de área (tabla maestra, con "Otro código" para agregar uno, p. ej. 0261) y
+ * el número de 7 dígitos. "Agregar otro teléfono" suma filas hasta el máximo que cabe en el PDF.
  */
 export function PhoneListField({
   control,
@@ -292,15 +368,14 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
   const base = `${name}.${index}` as const
   const n = index + 1
   const id = `rf-${name}-${index}`
-  const row = useWatch({ control, name: base }) as PhoneRow | undefined
-  const areaCodeFocus = useFocusOnRequest()
-  const kinshipFocus = useFocusOnRequest()
+  // Ventana abierta para escribir un código de área o un parentesco nuevo.
+  const [dialog, setDialog] = useState<'areaCode' | 'kinship' | null>(null)
 
   const messages = (['areaCodeId', 'areaCodeOther', 'number', 'kinshipId', 'kinshipOther'] as const)
     .map((key) => errorOf(errors, `${base}.${key}`))
     .filter(Boolean)
   const errorId = `${id}-error`
-  const invalid = (key: keyof PhoneRow) => Boolean(errorOf(errors, `${base}.${key}`))
+  const invalid = (...keys: (keyof PhoneRow)[]) => keys.some((key) => Boolean(errorOf(errors, `${base}.${key}`)))
   const digitsOnly = (value: string, max: number) => value.replace(/\D/g, '').slice(0, max)
 
   const describe = messages.length > 0 ? errorId : undefined
@@ -318,49 +393,51 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                 control={control}
                 name={`${base}.areaCodeOther`}
                 render={({ field: other }) => (
-                  <SearchableSelect
-                    id={`${id}-area`}
-                    ref={field.ref}
-                    ariaLabel={`Código de área del teléfono ${n}`}
-                    value={field.value}
-                    options={areaCodes}
-                    others={[AREA_CODE_OTHER]}
-                    placeholder="Código"
-                    loading={loading}
-                    invalid={invalid('areaCodeId')}
-                    describedBy={describe}
-                    onBlur={field.onBlur}
-                    onChange={(value, typed) => {
-                      field.onChange(value)
-                      if (typed !== undefined && AREA_CODE.test(typed)) other.onChange(typed)
-                      else if (value === OTHER) areaCodeFocus.request()
-                    }}
-                  />
+                  <>
+                    <SearchableSelect
+                      id={`${id}-area`}
+                      ref={bothRefs(field.ref, other.ref)}
+                      ariaLabel={`Código de área del teléfono ${n}`}
+                      value={field.value}
+                      displayValue={field.value === OTHER ? other.value || undefined : undefined}
+                      options={areaCodes}
+                      others={[AREA_CODE_OTHER]}
+                      placeholder="Código"
+                      loading={loading}
+                      invalid={invalid('areaCodeId', 'areaCodeOther')}
+                      describedBy={describe}
+                      onBlur={field.onBlur}
+                      onChange={(value, typed) => {
+                        if (value !== OTHER) field.onChange(value)
+                        else if (typed !== undefined && AREA_CODE.test(typed)) {
+                          field.onChange(OTHER)
+                          other.onChange(typed)
+                        } else setDialog('areaCode')
+                      }}
+                    />
+                    {dialog === 'areaCode' && (
+                      <OtherValueDialog
+                        title="Agregar código de área"
+                        label="Código de área"
+                        initial={field.value === OTHER ? other.value : ''}
+                        maxLength={4}
+                        numeric
+                        placeholder="0261"
+                        validate={(text) => (AREA_CODE.test(text) ? null : 'Código de 4 dígitos que empieza por 0 (p. ej. 0261).')}
+                        onCancel={() => setDialog(null)}
+                        onConfirm={(text) => {
+                          field.onChange(OTHER)
+                          other.onChange(text)
+                          setDialog(null)
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               />
             )}
           />
         </div>
-        {row?.areaCodeId === OTHER && (
-          <Controller
-            control={control}
-            name={`${base}.areaCodeOther`}
-            render={({ field }) => (
-              <Input
-                ref={areaCodeFocus.ref(field.ref)}
-                aria-label={`Código de área nuevo del teléfono ${n}`}
-                inputMode="numeric"
-                placeholder="0261"
-                className="w-24"
-                value={field.value}
-                invalid={invalid('areaCodeOther')}
-                aria-describedby={describe}
-                onBlur={field.onBlur}
-                onChange={(e) => field.onChange(digitsOnly(e.target.value, 4))}
-              />
-            )}
-          />
-        )}
         <Controller
           control={control}
           name={`${base}.number`}
@@ -381,61 +458,58 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
           )}
         />
         {kinships && (
-          <>
-            <div className="min-w-40 flex-1 sm:w-52 sm:flex-none">
-              <Controller
-                control={control}
-                name={`${base}.kinshipId`}
-                render={({ field }) => (
-                  <Controller
-                    control={control}
-                    name={`${base}.kinshipOther`}
-                    render={({ field: other }) => (
+          <div className="min-w-40 flex-1 sm:w-52 sm:flex-none">
+            <Controller
+              control={control}
+              name={`${base}.kinshipId`}
+              render={({ field }) => (
+                <Controller
+                  control={control}
+                  name={`${base}.kinshipOther`}
+                  render={({ field: other }) => (
+                    <>
                       <SearchableSelect
                         id={`${id}-kinship`}
-                        ref={field.ref}
+                        ref={bothRefs(field.ref, other.ref)}
                         ariaLabel={`Parentesco del teléfono ${n}`}
                         value={field.value}
+                        displayValue={field.value === OTHER ? newValueLabel(other.value) : undefined}
                         options={withoutGenericOther(kinships, field.value)}
                         others={[OTHER_OPTION]}
                         placeholder="Parentesco"
                         emptyLabel="Sin indicar"
                         loading={loading}
-                        invalid={invalid('kinshipId')}
+                        invalid={invalid('kinshipId', 'kinshipOther')}
                         describedBy={describe}
                         onBlur={field.onBlur}
                         onChange={(value, typed) => {
-                          field.onChange(value)
-                          if (typed !== undefined) other.onChange(typed.slice(0, otherKinshipMax))
-                          else if (value === OTHER) kinshipFocus.request()
+                          if (value !== OTHER) field.onChange(value)
+                          else if (typed !== undefined) {
+                            field.onChange(OTHER)
+                            other.onChange(typed.slice(0, otherKinshipMax))
+                          } else setDialog('kinship')
                         }}
                       />
-                    )}
-                  />
-                )}
-              />
-            </div>
-            {row?.kinshipId === OTHER && (
-              <Controller
-                control={control}
-                name={`${base}.kinshipOther`}
-                render={({ field }) => (
-                  <Input
-                    ref={kinshipFocus.ref(field.ref)}
-                    aria-label={`Parentesco nuevo del teléfono ${n}`}
-                    placeholder="Parentesco"
-                    maxLength={otherKinshipMax}
-                    className="w-auto min-w-40 flex-1 sm:w-44 sm:flex-none"
-                    value={field.value}
-                    invalid={invalid('kinshipOther')}
-                    aria-describedby={describe}
-                    onBlur={field.onBlur}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                )}
-              />
-            )}
-          </>
+                      {dialog === 'kinship' && (
+                        <OtherValueDialog
+                          title="Agregar parentesco"
+                          label="Parentesco"
+                          initial={field.value === OTHER ? other.value : ''}
+                          maxLength={otherKinshipMax}
+                          onCancel={() => setDialog(null)}
+                          onConfirm={(text) => {
+                            field.onChange(OTHER)
+                            other.onChange(text)
+                            setDialog(null)
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                />
+              )}
+            />
+          </div>
         )}
         <Button variant="ghost" size="icon" title="Quitar teléfono" aria-label={`Quitar el teléfono ${n}`} onClick={onRemove}>
           <Trash2 className="size-4" />

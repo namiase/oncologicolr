@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Controller, get, useForm, useWatch, type Control, type Path, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FileDown, History, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, ArrowRight, FileDown, History, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLookup } from '@/components/crud/useCrudResource'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +14,7 @@ import { useAuthStore } from '@/stores/authStore'
 import type { LookupItem } from '@/types/api'
 import { ChoiceField, PhoneListField, SelectField } from './ReportFields'
 import { CountedTextarea, IdentityCardInput, Section } from './ReportInputs'
+import { ReportProgress } from './ReportProgress'
 import {
   ageInYears,
   describeAge,
@@ -21,13 +22,17 @@ import {
   formFieldOf,
   JOB_OTHER_OPTIONS,
   LIMITS,
+  OTHER,
   reportSchema,
   todayISO,
   toPayload,
   toReportForm,
+  type PhoneRow,
   type ReportForm as ReportFormValues,
 } from './reportSchema'
 import { reportsApi, type SocialReport, type SocialReportContext } from './reportsApi'
+import { errorPathsByStep, LAST_STEP, missingFieldMessage, REPORT_STEPS, stepOfField, stepStates } from './reportSteps'
+import { ReportSummary } from './ReportSummary'
 
 type FieldName = Path<ReportFormValues>
 
@@ -125,11 +130,22 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
     getValues,
     reset,
     subscribe,
+    trigger,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema) as unknown as Resolver<ReportFormValues>,
     defaultValues: restoredDraft ?? defaults(),
   })
+
+  // ---- Pasos ----
+  // Al editar, todos los pasos ya tienen datos: se pueden revisar en cualquier orden.
+  // focus: campo con error al que llevar el foco cuando se muestre el paso (null = el paso entero).
+  const [view, setView] = useState<{ step: number; focus: string | null }>({ step: 0, focus: null })
+  const step = view.step
+  const [furthest, setFurthest] = useState(mode === 'edit' ? LAST_STEP : 0)
+  const stepRef = useRef<HTMLDivElement>(null)
+  const [draftSaved, setDraftSaved] = useState(Boolean(restoredDraft))
 
   // Guarda el borrador poco después de cada cambio, sin volver a dibujar el formulario.
   useEffect(() => {
@@ -139,7 +155,10 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
       formState: { values: true },
       callback: ({ values }) => {
         clearTimeout(timer)
-        timer = setTimeout(() => writeDraft(storageKey, values), 600)
+        timer = setTimeout(() => {
+          writeDraft(storageKey, values)
+          setDraftSaved(hasContent(values))
+        }, 600)
       },
     })
     return () => {
@@ -147,6 +166,53 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
       unsubscribe()
     }
   }, [storageKey, subscribe])
+
+  // Al cambiar de paso: arriba de la página, foco en el paso (o en el campo con error pendiente).
+  const mounted = useRef(false)
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    if (view.focus) {
+      setFocus(view.focus as FieldName)
+    } else {
+      stepRef.current?.focus({ preventScroll: true })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [view, setFocus])
+
+  const showStep = (next: number, focusField?: string | null) => {
+    setFurthest((value) => Math.max(value, next))
+    setView({ step: next, focus: focusField ?? null })
+  }
+
+  /** Ir a otro paso desde la barra o desde Editar: se marcan los errores del paso que se deja, sin impedir el cambio. */
+  const goTo = (next: number) => {
+    if (next === step) return
+    void trigger(REPORT_STEPS[step]!.fields as FieldName[])
+    showStep(next)
+  }
+
+  /** Siguiente: solo avanza si el paso actual no tiene errores. */
+  const goNext = async () => {
+    const valid = await trigger(REPORT_STEPS[step]!.fields as FieldName[], { shouldFocus: true })
+    if (valid) showStep(step + 1)
+  }
+
+  /**
+   * Al guardar con datos faltantes o con error: dice cuál falta y en qué paso, lleva a ese paso y
+   * pone el cursor en el campo.
+   */
+  const showFirstError = (fieldErrors: object) => {
+    const paths = errorPathsByStep(fieldErrors)
+    toast.error(missingFieldMessage(paths))
+    const path = paths[0]
+    if (!path) return
+    const target = stepOfField(path)
+    if (target === step) setFocus(path as FieldName)
+    else showStep(target, path)
+  }
 
   const discardDraft = () => {
     clearDraft(storageKey)
@@ -207,14 +273,32 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
         const fieldErrors = Object.entries(getFieldErrors(error))
           .map(([name, message]) => [formFieldOf(name), message] as const)
           .filter(([name]) => known.has(name.split('.')[0]!))
-        fieldErrors.forEach(([name, message], index) =>
-          setError(name as FieldName, { type: 'server', message }, { shouldFocus: index === 0 }),
-        )
-        if (fieldErrors.length === 0) setError('root.server', { type: 'server', message: getErrorMessage(error) })
-        toast.error(fieldErrors.length > 0 ? 'Revise los campos marcados.' : getErrorMessage(error))
+        fieldErrors.forEach(([name, message]) => setError(name as FieldName, { type: 'server', message }))
+        if (fieldErrors.length > 0) {
+          // Mismo aviso que con los errores del formulario: qué campo, en qué paso, y el cursor ahí.
+          showFirstError(Object.fromEntries(fieldErrors.map(([name, message]) => [name, { message }])))
+        } else {
+          setError('root.server', { type: 'server', message: getErrorMessage(error) })
+          toast.error(getErrorMessage(error))
+        }
       }
     },
-    () => toast.error('Revise los campos marcados.'),
+    (fieldErrors) => showFirstError(fieldErrors),
+  )
+
+  // ---- Resumen ----
+  const phoneLabel = (row: PhoneRow) => {
+    if (!row?.number) return ''
+    const code = row.areaCodeId === OTHER ? row.areaCodeOther : (areaCodeOptions.find((o) => o.value === row.areaCodeId)?.short ?? '')
+    const kinship = row.kinshipId === OTHER ? row.kinshipOther : kinshipOptions.find((o) => o.value === row.kinshipId)?.label
+    return `${code ? `${code}-` : ''}${row.number}${kinship ? ` (${kinship})` : ''}`
+  }
+  const keepsReportWorker = Boolean(initial) && context.socialWorker?.id !== initial?.socialWorkerId
+  const signer = (keepsReportWorker ? initial?.socialWorkerName : context.socialWorker?.fullName) ?? null
+  const progress = stepStates(
+    step,
+    furthest,
+    REPORT_STEPS.map((s) => s.fields.some((field) => Boolean(get(errors, field)))),
   )
 
   // ---- Ayudantes de campos ----
@@ -361,192 +445,244 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
         </Notice>
       )}
 
-      <Section number={1} title="Identificación del paciente" description="Hoja 1 del formulario.">
-        {text('medicalRecordNumber', 'Historia clínica Nº', LIMITS.medicalRecordNumber, { required: true, className: 'lg:col-span-2' })}
-        {text('admissionDate', 'Fecha de ingreso', 10, { required: true, type: 'date', max: todayISO(), className: 'lg:col-span-2' })}
-        {choice('religionId', 'religionOther', 'Religión', toOptions(religions.data), {
-          loading: religions.isPending,
-          className: 'lg:col-span-2',
-        })}
+      <ReportProgress states={progress} onSelect={goTo} />
 
-        {text('lastNames', 'Apellidos', LIMITS.names, { required: true, className: 'lg:col-span-3' })}
-        {text('firstNames', 'Nombres', LIMITS.names, { required: true, className: 'lg:col-span-3' })}
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        {/* Solo se muestra el paso actual; los valores de los demás pasos se conservan en el formulario. */}
+        <div
+          ref={stepRef}
+          tabIndex={-1}
+          aria-label={`Paso ${step + 1} de ${REPORT_STEPS.length}: ${REPORT_STEPS[step]!.title}`}
+          className="min-w-0 space-y-5 outline-none"
+        >
+          {step === 0 && (
+            <Section number={1} title="Identificación del paciente" description="Hoja 1 del formulario.">
+              {text('medicalRecordNumber', 'Historia clínica Nº', LIMITS.medicalRecordNumber, { required: true, className: 'lg:col-span-2' })}
+              {text('admissionDate', 'Fecha de ingreso', 10, { required: true, type: 'date', max: todayISO(), className: 'lg:col-span-2' })}
+              {choice('religionId', 'religionOther', 'Religión', toOptions(religions.data), {
+                loading: religions.isPending,
+                className: 'lg:col-span-2',
+              })}
 
-        {composite('identityCard', 'Cédula de identidad', IdentityCardInput, 'lg:col-span-3')}
-        {text('passportNumber', 'Nº de pasaporte', LIMITS.passportNumber, { className: 'lg:col-span-3' })}
+              {text('lastNames', 'Apellidos', LIMITS.names, { required: true, className: 'lg:col-span-3' })}
+              {text('firstNames', 'Nombres', LIMITS.names, { required: true, className: 'lg:col-span-3' })}
 
-        {text('birthPlace', 'Lugar de nacimiento', LIMITS.birthPlace, { className: 'lg:col-span-2', placeholder: 'Ciudad o localidad' })}
-        {select('birthCountryId', 'País', toOptions(countries.data), {
-          loading: countries.isPending,
-          className: 'lg:col-span-2',
-          onValueChange: () => {
-            setValue('birthStateId', '')
-            setValue('birthMunicipalityId', '')
-          },
-        })}
-        {select('birthStateId', 'Estado', toOptions(states.data), {
-          loading: Boolean(countryId) && states.isPending,
-          disabled: !countryId,
-          placeholder: countryId ? 'Seleccione…' : 'Elija primero el país',
-          className: 'lg:col-span-2',
-          onValueChange: () => setValue('birthMunicipalityId', ''),
-        })}
-        {select('birthMunicipalityId', 'Municipio', toOptions(municipalities.data), {
-          loading: Boolean(stateId) && municipalities.isPending,
-          disabled: !stateId,
-          placeholder: stateId ? 'Seleccione…' : 'Elija primero el estado',
-          className: 'lg:col-span-2',
-        })}
-        {text('birthDate', 'Fecha de nacimiento', 10, { type: 'date', max: todayISO(), className: 'lg:col-span-2' })}
-        <AgeField control={control} manualRef={pediatricManual} onPediatric={setPediatric} />
+              {composite('identityCard', 'Cédula de identidad', IdentityCardInput, 'lg:col-span-3')}
+              {text('passportNumber', 'Nº de pasaporte', LIMITS.passportNumber, { className: 'lg:col-span-3' })}
 
-        {select('genderId', 'Sexo', toOptions(genders.data), { loading: genders.isPending, className: 'lg:col-span-2' })}
-        {choice('raceId', 'raceOther', 'Raza', toOptions(races.data), { loading: races.isPending, className: 'lg:col-span-2' })}
-        {choice('maritalStatusId', 'maritalStatusOther', 'Estado civil', toOptions(maritalStatuses.data), {
-          loading: maritalStatuses.isPending,
-          className: 'lg:col-span-2',
-        })}
+              {text('birthPlace', 'Lugar de nacimiento', LIMITS.birthPlace, { className: 'lg:col-span-2', placeholder: 'Ciudad o localidad' })}
+              {select('birthCountryId', 'País', toOptions(countries.data), {
+                loading: countries.isPending,
+                className: 'lg:col-span-2',
+                onValueChange: () => {
+                  setValue('birthStateId', '')
+                  setValue('birthMunicipalityId', '')
+                },
+              })}
+              {select('birthStateId', 'Estado', toOptions(states.data), {
+                loading: Boolean(countryId) && states.isPending,
+                disabled: !countryId,
+                placeholder: countryId ? 'Seleccione…' : 'Elija primero el país',
+                className: 'lg:col-span-2',
+                onValueChange: () => setValue('birthMunicipalityId', ''),
+              })}
+              {select('birthMunicipalityId', 'Municipio', toOptions(municipalities.data), {
+                loading: Boolean(stateId) && municipalities.isPending,
+                disabled: !stateId,
+                placeholder: stateId ? 'Seleccione…' : 'Elija primero el estado',
+                className: 'lg:col-span-2',
+              })}
+              {text('birthDate', 'Fecha de nacimiento', 10, { type: 'date', max: todayISO(), className: 'lg:col-span-2' })}
+              <AgeField control={control} manualRef={pediatricManual} onPediatric={setPediatric} />
 
-        {choice('educationLevelId', 'educationLevelOther', 'Grado de instrucción', toOptions(educationLevels.data), {
-          loading: educationLevels.isPending,
-          className: 'lg:col-span-3',
-        })}
-        {choice('professionOrOccupation', 'professionOrOccupationOther', 'Profesión u oficio', professionOptions, {
-          loading: professions.isPending || occupations.isPending,
-          others: JOB_OTHER_OPTIONS,
-          className: 'lg:col-span-3',
-        })}
+              {select('genderId', 'Sexo', toOptions(genders.data), { loading: genders.isPending, className: 'lg:col-span-2' })}
+              {choice('raceId', 'raceOther', 'Raza', toOptions(races.data), { loading: races.isPending, className: 'lg:col-span-2' })}
+              {choice('maritalStatusId', 'maritalStatusOther', 'Estado civil', toOptions(maritalStatuses.data), {
+                loading: maritalStatuses.isPending,
+                className: 'lg:col-span-2',
+              })}
 
-        {text('homeAddress', 'Dirección de habitación', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
-        <PhoneListField
-          control={control}
-          errors={errors}
-          name="phones"
-          label="Teléfonos"
-          max={LIMITS.patientPhones}
-          areaCodes={areaCodeOptions}
-          loading={areaCodes.isPending}
-        />
-      </Section>
+              {choice('educationLevelId', 'educationLevelOther', 'Grado de instrucción', toOptions(educationLevels.data), {
+                loading: educationLevels.isPending,
+                className: 'lg:col-span-3',
+              })}
+              {choice('professionOrOccupation', 'professionOrOccupationOther', 'Profesión u oficio', professionOptions, {
+                loading: professions.isPending || occupations.isPending,
+                others: JOB_OTHER_OPTIONS,
+                className: 'lg:col-span-3',
+              })}
 
-      <Section number={2} title="Seguridad social y referencia">
-        {/* IVSS e IPASME ocupan una columna solo desde xl: en 1024 px "Sin indicar" no cabía. */}
-        {select('hasIvss', 'IVSS', YES_NO, { className: 'lg:col-span-2 xl:col-span-1', placeholder: 'Sin indicar' })}
-        {select('hasIpasme', 'IPASME', YES_NO, { className: 'lg:col-span-2 xl:col-span-1', placeholder: 'Sin indicar' })}
-        {text('insurancePolicy', 'Póliza', LIMITS.socialSecurity, { className: 'lg:col-span-2' })}
-        {text('otherSocialSecurity', 'Otros', LIMITS.socialSecurity, { className: 'lg:col-span-3 xl:col-span-2' })}
-        {text('referredBy', 'Referido por', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-3 xl:col-span-6' })}
-      </Section>
+              {text('homeAddress', 'Dirección de habitación', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
+              <PhoneListField
+                control={control}
+                errors={errors}
+                name="phones"
+                label="Teléfonos"
+                max={LIMITS.patientPhones}
+                areaCodes={areaCodeOptions}
+                loading={areaCodes.isPending}
+              />
+            </Section>
+          )}
 
-      <Section number={3} title="Trabajo">
-        {text('workplace', 'Lugar de trabajo', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-4' })}
-        {text('workSchedule', 'Horario', LIMITS.workSchedule, { className: 'lg:col-span-2' })}
-        {text('workAddress', 'Dirección del trabajo', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
-        <PhoneListField
-          control={control}
-          errors={errors}
-          name="workPhones"
-          label="Teléfonos del trabajo"
-          max={LIMITS.workPhones}
-          areaCodes={areaCodeOptions}
-          loading={areaCodes.isPending}
-        />
-      </Section>
+          {step === 1 && (
+            <>
+              <Section number={2} title="Seguridad social y referencia">
+                {/* Dos columnas cada uno: con el resumen al lado, una sola columna corta "Sin indicar". */}
+                {select('hasIvss', 'IVSS', YES_NO, { className: 'lg:col-span-2', placeholder: 'Sin indicar' })}
+                {select('hasIpasme', 'IPASME', YES_NO, { className: 'lg:col-span-2', placeholder: 'Sin indicar' })}
+                {text('insurancePolicy', 'Póliza', LIMITS.socialSecurity, { className: 'lg:col-span-2' })}
+                {text('otherSocialSecurity', 'Otros', LIMITS.socialSecurity, { className: 'lg:col-span-3' })}
+                {text('referredBy', 'Referido por', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-3' })}
+              </Section>
 
-      <Section number={4} title="Paciente de pediatría">
-        <div className="sm:col-span-2 lg:col-span-6">
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-800 lg:min-h-0">
-            <Controller
-              control={control}
-              name="isPediatric"
-              render={({ field }) => (
-                <input
-                  type="checkbox"
-                  className="size-4 rounded accent-brand-700"
-                  ref={field.ref}
-                  name={field.name}
-                  checked={field.value as boolean}
-                  onBlur={field.onBlur}
-                  onChange={(e) => {
-                    markPediatricManual()
-                    field.onChange(e.target.checked)
-                  }}
-                  aria-describedby="rf-isPediatric-hint"
+              <Section number={3} title="Trabajo">
+                {text('workplace', 'Lugar de trabajo', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-4' })}
+                {text('workSchedule', 'Horario', LIMITS.workSchedule, { className: 'lg:col-span-2' })}
+                {text('workAddress', 'Dirección del trabajo', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
+                <PhoneListField
+                  control={control}
+                  errors={errors}
+                  name="workPhones"
+                  label="Teléfonos del trabajo"
+                  max={LIMITS.workPhones}
+                  areaCodes={areaCodeOptions}
+                  loading={areaCodes.isPending}
                 />
-              )}
-            />
-            Es paciente de pediatría
-          </label>
-          <p id="rf-isPediatric-hint" className="mt-1 text-xs text-slate-500">
-            Se marca sola cuando el paciente es menor de 18 años. Puede cambiarla.
-          </p>
+              </Section>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <Section number={4} title="Paciente de pediatría">
+                <div className="sm:col-span-2 lg:col-span-6">
+                  <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-800 lg:min-h-0">
+                    <Controller
+                      control={control}
+                      name="isPediatric"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="size-4 rounded accent-brand-700"
+                          ref={field.ref}
+                          name={field.name}
+                          checked={field.value as boolean}
+                          onBlur={field.onBlur}
+                          onChange={(e) => {
+                            markPediatricManual()
+                            field.onChange(e.target.checked)
+                          }}
+                          aria-describedby="rf-isPediatric-hint"
+                        />
+                      )}
+                    />
+                    Es paciente de pediatría
+                  </label>
+                  <p id="rf-isPediatric-hint" className="mt-1 text-xs text-slate-500">
+                    Se marca sola cuando el paciente es menor de 18 años. Puede cambiarla.
+                  </p>
+                </div>
+                {isPediatric && (
+                  <>
+                    {text('guardianFullName', 'Representante (apellidos y nombres)', LIMITS.guardianName, {
+                      required: true,
+                      className: 'sm:col-span-2 lg:col-span-2',
+                    })}
+                    {composite('guardianIdentityCard', 'C.I. del representante', IdentityCardInput, 'lg:col-span-2')}
+                    {choice('guardianKinshipId', 'guardianKinshipOther', 'Parentesco', kinshipOptions, {
+                      loading: kinships.isPending,
+                      otherMax: LIMITS.otherKinship,
+                      className: 'lg:col-span-2',
+                    })}
+                  </>
+                )}
+              </Section>
+
+              <Section number={5} title="Familiares o conocidos" description="En el Distrito Capital o en su localidad.">
+                {text('contactAddress', 'Dirección', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
+                {text('contactFullName', 'Apellidos y nombres', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-6' })}
+                <PhoneListField
+                  control={control}
+                  errors={errors}
+                  name="contactPhones"
+                  label="Teléfonos y parentesco"
+                  max={LIMITS.contactPhones}
+                  areaCodes={areaCodeOptions}
+                  kinships={kinshipOptions}
+                  otherKinshipMax={LIMITS.otherKinship}
+                  loading={areaCodes.isPending || kinships.isPending}
+                />
+              </Section>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <Section
+                number={6}
+                title="Evaluación social"
+                description="Hoja 2 del formulario. El contador indica el espacio disponible en el informe impreso."
+              >
+                {longText('medicalSocialArea', 'Área médico social', LIMITS.medicalSocialArea, 4)}
+                {longText('psychosocialArea', 'Área psicosocial', LIMITS.psychosocialArea, 5)}
+                {longText('socioeconomicArea', 'Área socioeconómica', LIMITS.socioeconomicArea, 7)}
+                {longText('physicalEnvironmentArea', 'Área físico ambiental', LIMITS.physicalEnvironmentArea, 5)}
+              </Section>
+
+              <Section number={7} title="Diagnóstico y referencia">
+                {longText('clinicalDiagnosis', 'Diagnóstico clínico', LIMITS.clinicalDiagnosis, 2)}
+                {longText('referralServices', 'Servicios a que refieren', LIMITS.referralServices, 2)}
+                {longText('observations', 'Observaciones', LIMITS.observations, 3)}
+              </Section>
+
+              <Section number={8} title="Trabajador(a) social tratante" description={signerDescription(context, initial)}>
+                <SignerSummary context={context} initial={initial} />
+              </Section>
+            </>
+          )}
         </div>
-        {isPediatric && (
-          <>
-            {text('guardianFullName', 'Representante (apellidos y nombres)', LIMITS.guardianName, {
-              required: true,
-              className: 'sm:col-span-2 lg:col-span-2',
-            })}
-            {composite('guardianIdentityCard', 'C.I. del representante', IdentityCardInput, 'lg:col-span-2')}
-            {choice('guardianKinshipId', 'guardianKinshipOther', 'Parentesco', kinshipOptions, {
-              loading: kinships.isPending,
-              otherMax: LIMITS.otherKinship,
-              className: 'lg:col-span-2',
-            })}
-          </>
+
+        <aside className="sticky top-20 hidden xl:block" aria-label="Resumen del informe">
+          <ReportSummary control={control} states={progress} onEdit={goTo} phoneLabel={phoneLabel} signer={signer} />
+        </aside>
+      </div>
+
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <p className="mr-auto hidden items-center gap-2 text-xs text-slate-500 sm:flex">
+          {mode === 'create' && draftSaved && (
+            <>
+              <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
+              Borrador guardado
+            </>
+          )}
+        </p>
+        {step > 0 && (
+          <Button variant="secondary" icon={<ArrowLeft className="size-4" />} onClick={() => goTo(step - 1)}>
+            Anterior
+          </Button>
         )}
-      </Section>
-
-      <Section number={5} title="Familiares o conocidos" description="En el Distrito Capital o en su localidad.">
-        {text('contactAddress', 'Dirección', LIMITS.address, { className: 'sm:col-span-2 lg:col-span-6' })}
-        {text('contactFullName', 'Apellidos y nombres', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-6' })}
-        <PhoneListField
-          control={control}
-          errors={errors}
-          name="contactPhones"
-          label="Teléfonos y parentesco"
-          max={LIMITS.contactPhones}
-          areaCodes={areaCodeOptions}
-          kinships={kinshipOptions}
-          otherKinshipMax={LIMITS.otherKinship}
-          loading={areaCodes.isPending || kinships.isPending}
-        />
-      </Section>
-
-      <Section
-        number={6}
-        title="Evaluación social"
-        description="Hoja 2 del formulario. El contador indica el espacio disponible en el informe impreso."
-      >
-        {longText('medicalSocialArea', 'Área médico social', LIMITS.medicalSocialArea, 4)}
-        {longText('psychosocialArea', 'Área psicosocial', LIMITS.psychosocialArea, 5)}
-        {longText('socioeconomicArea', 'Área socioeconómica', LIMITS.socioeconomicArea, 7)}
-        {longText('physicalEnvironmentArea', 'Área físico ambiental', LIMITS.physicalEnvironmentArea, 5)}
-      </Section>
-
-      <Section number={7} title="Diagnóstico y referencia">
-        {longText('clinicalDiagnosis', 'Diagnóstico clínico', LIMITS.clinicalDiagnosis, 2)}
-        {longText('referralServices', 'Servicios a que refieren', LIMITS.referralServices, 2)}
-        {longText('observations', 'Observaciones', LIMITS.observations, 3)}
-      </Section>
-
-      <Section number={8} title="Trabajador(a) social tratante" description={signerDescription(context, initial)}>
-        <SignerSummary context={context} initial={initial} />
-      </Section>
-
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-col-reverse gap-2 border-t border-slate-200 bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-center sm:justify-end sm:px-6">
-        <p className="text-xs text-slate-500 sm:mr-auto">Fecha de hoy: {formatISODate(todayISO())}</p>
-        <Button type="submit" size="lg" loading={isSubmitting} disabled={cannotSign} icon={<FileDown className="size-4" />}>
-          {mode === 'create' ? 'Guardar y descargar PDF' : 'Guardar cambios y descargar PDF'}
-        </Button>
+        {step < LAST_STEP && (
+          <Button variant={mode === 'edit' ? 'secondary' : 'primary'} className="flex-1 sm:flex-none" onClick={() => void goNext()}>
+            Siguiente<span className="hidden sm:inline">: {REPORT_STEPS[step + 1]!.title}</span>
+            <ArrowRight className="size-4" aria-hidden />
+          </Button>
+        )}
+        {(step === LAST_STEP || mode === 'edit') && (
+          <Button
+            type="submit"
+            size="lg"
+            loading={isSubmitting}
+            disabled={cannotSign}
+            icon={<FileDown className="size-4" />}
+            className="w-full sm:w-auto"
+          >
+            {mode === 'create' ? 'Guardar y descargar PDF' : 'Guardar cambios y descargar PDF'}
+          </Button>
+        )}
       </div>
     </form>
   )
-}
-
-const formatISODate = (iso: string) => {
-  const [y, m, d] = iso.split('-')
-  return `${d}/${m}/${y}`
 }
 
 /**
