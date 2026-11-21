@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { OtherOption } from '@/components/ui/SearchableSelect'
+import type { OtherOption, SearchableOption } from '@/components/ui/SearchableSelect'
 import type { SocialReport, SocialReportPayload, SocialReportPhone, SocialReportPhoneInput } from './reportsApi'
 
 /**
@@ -43,6 +43,29 @@ export const OTHER_OPTION: OtherOption = {
   label: 'Otro (escribir)',
   createLabel: (query) => `Agregar «${query}»`,
 }
+
+/** El mismo "Otro" para listas de nombre femenino (religión, raza). */
+export const OTHER_OPTION_F: OtherOption = { ...OTHER_OPTION, label: 'Otra (escribir)' }
+
+/**
+ * Filas de catálogo llamadas solo "Otro"/"Otra": junto a "Otro (escribir)" serían dos opciones
+ * casi iguales, y la del catálogo imprime "Otra" en el PDF sin el valor real. Se ocultan de la
+ * lista salvo que sea el valor ya guardado en el informe.
+ */
+const GENERIC_OTHER = /^otr[oa]s?$/
+
+export const withoutGenericOther = (options: SearchableOption[], current: string | undefined) =>
+  options.filter(
+    (option) =>
+      option.value === current ||
+      !GENERIC_OTHER.test(
+        option.label
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .trim()
+          .toLowerCase(),
+      ),
+  )
 
 /** "Profesión u oficio": un "Otro" por grupo, para saber en qué tabla maestra agregarlo. */
 export const JOB_OTHER_OPTIONS: OtherOption[] = [

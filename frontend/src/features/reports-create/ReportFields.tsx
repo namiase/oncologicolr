@@ -6,7 +6,16 @@ import { Input } from '@/components/ui/Input'
 import { SearchableSelect, type OtherOption, type SearchableOption } from '@/components/ui/SearchableSelect'
 import { describedBy } from '@/components/ui/fieldStyles'
 import { cn } from '@/lib/cn'
-import { emptyPhone, isOther, OTHER, OTHER_OPTION, type PhoneListName, type PhoneRow, type ReportForm } from './reportSchema'
+import {
+  emptyPhone,
+  isOther,
+  OTHER,
+  OTHER_OPTION,
+  withoutGenericOther,
+  type PhoneListName,
+  type PhoneRow,
+  type ReportForm,
+} from './reportSchema'
 
 type FieldName = Path<ReportForm>
 
@@ -119,7 +128,7 @@ export function ChoiceField({
                   id={id}
                   ref={field.ref}
                   value={field.value as string}
-                  options={options}
+                  options={withoutGenericOther(options, field.value as string)}
                   others={others}
                   placeholder={placeholder}
                   emptyLabel={emptyLabel ?? undefined}
@@ -353,7 +362,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                         ref={field.ref}
                         ariaLabel={`Parentesco del teléfono ${n}`}
                         value={field.value}
-                        options={kinships}
+                        options={withoutGenericOther(kinships, field.value)}
                         others={[OTHER_OPTION]}
                         placeholder="Parentesco"
                         emptyLabel="Sin indicar"
