@@ -303,7 +303,7 @@ export function SearchableSelect({
         onKeyDown={onTriggerKeyDown}
         className={cn(controlClass(invalid), 'flex h-10 items-center gap-2 pr-2.5 text-left', className)}
       >
-        <span className={cn('min-w-0 flex-1 truncate', !display && 'font-normal text-slate-400')}>
+        <span className={cn('min-w-0 flex-1 truncate', !display && 'font-normal text-slate-500')}>
           {display ?? (loading ? 'Cargando…' : placeholder)}
         </span>
         <ChevronDown className={cn('size-4 shrink-0 text-slate-400 transition-transform', open && 'rotate-180')} aria-hidden />
@@ -338,7 +338,7 @@ export function SearchableSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onListKeyDown}
-                className="h-9 w-full rounded-lg border-0 bg-slate-50 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-slate-200 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 focus:outline-none"
+                className="h-9 w-full rounded-lg border-0 bg-slate-50 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-control ring-inset placeholder:text-slate-500 focus:ring-2 focus:ring-brand-600 focus:outline-none"
               />
             </div>
           )}
