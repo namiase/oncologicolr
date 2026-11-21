@@ -95,6 +95,8 @@ export function SearchableSelect({
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const [placement, setPlacement] = useState<Placement | null>(null)
+  // Nombre del campo para la búsqueda y la lista (si no, el lector de pantalla solo dice "Buscar").
+  const [fieldName, setFieldName] = useState<string | undefined>(ariaLabel)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -172,6 +174,7 @@ export function SearchableSelect({
   const openList = (initialQuery = '') => {
     if (disabled) return
     place()
+    setFieldName(ariaLabel ?? triggerRef.current?.labels?.[0]?.textContent?.replace(/\*\s*$/, '').trim() ?? undefined)
     setQuery(initialQuery)
     setOpen(true)
   }
@@ -321,7 +324,7 @@ export function SearchableSelect({
               aria-controls={listId}
               aria-autocomplete="list"
               aria-activedescendant={items[active] ? optionId(active) : undefined}
-              aria-label="Buscar"
+              aria-label={fieldName ? `Buscar en ${fieldName}` : 'Buscar'}
               autoComplete="off"
               placeholder="Buscar…"
               value={query}
@@ -331,7 +334,7 @@ export function SearchableSelect({
             />
           </div>
 
-          <ul ref={listRef} id={listId} role="listbox" aria-label={ariaLabel} className="min-h-0 flex-1 overflow-y-auto p-1">
+          <ul ref={listRef} id={listId} role="listbox" aria-label={fieldName} className="min-h-0 flex-1 overflow-y-auto p-1">
             {loading && <li className="px-3 py-2 text-sm text-slate-500">Cargando…</li>}
             {!loading && items.every((item) => item.kind !== 'option') && query.trim() !== '' && (
               <li className="px-3 py-2 text-sm text-slate-500">Sin resultados para «{query.trim()}».</li>
