@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TrabajoSocial.Application.Common;
 using TrabajoSocial.Application.Common.Exceptions;
 using TrabajoSocial.Application.SocialWorkers;
 using TrabajoSocial.Domain.Constants;
@@ -15,7 +16,7 @@ public sealed class SocialWorkerServiceTests
     [InlineData("X-12345678", null)]
     [InlineData("V-12", null)]
     public void Identity_card_is_normalized(string input, string? expected)
-        => Assert.Equal(expected, SocialWorkerService.NormalizeIdentityCard(input));
+        => Assert.Equal(expected, IdentityCards.Normalize(input));
 
     private static SocialWorkerUpsertDto Worker(string identityCard, string ants, short year = 2005) => new()
     {

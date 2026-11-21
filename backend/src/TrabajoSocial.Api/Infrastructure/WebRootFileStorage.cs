@@ -31,16 +31,25 @@ internal sealed partial class WebRootFileStorage(IWebHostEnvironment environment
 
     public Task DeleteAsync(string publicPath, CancellationToken ct = default)
     {
-        var uploadsRoot = Path.GetFullPath(Path.Combine(WebRoot, UploadsFolder)) + Path.DirectorySeparatorChar;
-        var fullPath = Path.GetFullPath(Path.Combine(WebRoot, publicPath.TrimStart('/')));
-
-        // Evita borrar fuera de wwwroot/uploads (path traversal).
-        if (fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
+        if (ResolveInsideUploads(publicPath) is { } fullPath && File.Exists(fullPath))
         {
             File.Delete(fullPath);
         }
 
         return Task.CompletedTask;
+    }
+
+    public async Task<byte[]?> ReadAsync(string publicPath, CancellationToken ct = default)
+        => ResolveInsideUploads(publicPath) is { } fullPath && File.Exists(fullPath)
+            ? await File.ReadAllBytesAsync(fullPath, ct)
+            : null;
+
+    /// <summary>Ruta física del archivo, o null si queda fuera de wwwroot/uploads (path traversal).</summary>
+    private string? ResolveInsideUploads(string publicPath)
+    {
+        var uploadsRoot = Path.GetFullPath(Path.Combine(WebRoot, UploadsFolder)) + Path.DirectorySeparatorChar;
+        var fullPath = Path.GetFullPath(Path.Combine(WebRoot, publicPath.TrimStart('/')));
+        return fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase) ? fullPath : null;
     }
 
     [GeneratedRegex("^[a-z0-9-]+$")]

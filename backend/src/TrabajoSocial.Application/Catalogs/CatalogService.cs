@@ -102,6 +102,44 @@ public class CatalogService<TEntity>(
 
     public virtual Task<int> CountByParentAsync(Guid parentId, CancellationToken ct = default) => Task.FromResult(0);
 
+    public virtual async Task<Guid> FindOrCreateAsync(string name, string? code = null, CancellationToken ct = default)
+    {
+        var cleanName = NormalizeName(name);
+        var cleanCode = string.IsNullOrWhiteSpace(code) ? null : code.Trim();
+        if (cleanName.Length is 0 or > CatalogEntity.NameMaxLength)
+        {
+            throw new ValidationException("name", $"El valor debe tener entre 1 y {CatalogEntity.NameMaxLength} caracteres.");
+        }
+
+        // Se reutiliza aunque esté inactivo: es el valor que la usuaria escribió.
+        var lowerName = cleanName.ToLower();
+        var existing = await Repository.Query()
+            .Where(e => cleanCode != null ? e.Code == cleanCode : e.Name.ToLower() == lowerName)
+            .Select(e => (Guid?)e.Id)
+            .FirstOrDefaultAsync(ct);
+        if (existing is { } id)
+        {
+            return id;
+        }
+
+        var nextOrder = (await Repository.Query().MaxAsync(e => (int?)e.SortOrder, ct) ?? 0) + 1;
+        var created = await CreateAsync(new CatalogUpsertDto
+        {
+            Name = cleanName,
+            Code = cleanCode,
+            SortOrder = Math.Min(nextOrder, 9999),
+            StatusId = StatusIds.Active
+        }, ct);
+        return created.Id;
+    }
+
+    /// <summary>Sin espacios repetidos y con la primera letra en mayúscula ("hermano de crianza" → "Hermano de crianza").</summary>
+    private static string NormalizeName(string value)
+    {
+        var compact = string.Join(' ', value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        return compact.Length == 0 ? compact : char.ToUpper(compact[0]) + compact[1..];
+    }
+
     // ---- Puntos de extensión para catálogos jerárquicos ----
 
     protected virtual IQueryable<TEntity> FilterByParent(IQueryable<TEntity> query, Guid parentId) => query;

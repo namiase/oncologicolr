@@ -7,4 +7,7 @@ public interface IFileStorage
     Task<string> SaveAsync(Stream content, string folder, string extension, CancellationToken ct = default);
 
     Task DeleteAsync(string publicPath, CancellationToken ct = default);
+
+    /// <summary>Lee un archivo guardado (p. ej. el membrete para el PDF). Null si no existe.</summary>
+    Task<byte[]?> ReadAsync(string publicPath, CancellationToken ct = default);
 }

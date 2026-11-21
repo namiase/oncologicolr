@@ -4,17 +4,27 @@ import { api } from '@/lib/api'
 export interface Branding {
   companyName: string
   logoUrl: string | null
+  /** Membrete de los informes impresos (encabezado oficial). */
+  reportHeaderUrl: string | null
 }
 
 export const DEFAULT_LOGO = '/logo-default.svg'
 
 export const brandingApi = {
   get: async () => (await api.get<Branding>('/settings/branding')).data,
-  update: async (data: { companyName: string; logo?: File | null; removeLogo?: boolean }) => {
+  update: async (data: {
+    companyName: string
+    logo?: File | null
+    removeLogo?: boolean
+    reportHeader?: File | null
+    removeReportHeader?: boolean
+  }) => {
     const form = new FormData()
     form.append('companyName', data.companyName)
     if (data.logo) form.append('logo', data.logo)
     if (data.removeLogo) form.append('removeLogo', 'true')
+    if (data.reportHeader) form.append('reportHeader', data.reportHeader)
+    if (data.removeReportHeader) form.append('removeReportHeader', 'true')
     return (await api.put<Branding>('/settings/branding', form)).data
   },
 }

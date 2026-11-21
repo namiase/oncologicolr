@@ -3,6 +3,7 @@ using TrabajoSocial.Application.Auth;
 using TrabajoSocial.Application.Catalogs;
 using TrabajoSocial.Application.Dashboard;
 using TrabajoSocial.Application.Permissions;
+using TrabajoSocial.Application.Reports;
 using TrabajoSocial.Application.Settings;
 using TrabajoSocial.Application.SocialWorkers;
 using TrabajoSocial.Application.Users;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ISocialReportService, SocialReportService>();
 
         // Tablas maestras: un servicio por catálogo, resuelto por su clave.
         services.AddScoped<ICatalogServiceFactory, CatalogServiceFactory>();

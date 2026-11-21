@@ -5,14 +5,18 @@ using TrabajoSocial.Domain.Entities.Settings;
 
 namespace TrabajoSocial.Application.Settings;
 
-public sealed record BrandingDto(string CompanyName, string? LogoUrl);
+/// <param name="ReportHeaderUrl">Membrete de los informes impresos (null: se usa el logo y el nombre).</param>
+public sealed record BrandingDto(string CompanyName, string? LogoUrl, string? ReportHeaderUrl = null);
+
+/// <summary>Archivo de imagen recibido (logo o membrete).</summary>
+public sealed record ImageUpload(Stream Content, string? FileName, long Length);
 
 public sealed record UpdateBrandingCommand(
     string CompanyName,
-    Stream? Logo,
-    string? LogoFileName,
-    long LogoLength,
-    bool RemoveLogo);
+    ImageUpload? Logo,
+    bool RemoveLogo,
+    ImageUpload? ReportHeader = null,
+    bool RemoveReportHeader = false);
 
 public interface ISettingsService
 {
@@ -36,12 +40,15 @@ public sealed class SettingsService(
         [".webp"] = [[0x52, 0x49, 0x46, 0x46]] // "RIFF" + "WEBP" en el byte 8 (se valida aparte)
     };
 
+    /// <summary>El membrete se incrusta en el PDF, y el generador de PDF no admite WEBP.</summary>
+    private static readonly string[] ReportHeaderExtensions = [".png", ".jpg", ".jpeg"];
+
     public async Task<BrandingDto> GetBrandingAsync(CancellationToken ct = default)
     {
         var setting = await settings.Query().OrderBy(s => s.CreatedAt).FirstOrDefaultAsync(ct);
         return setting is null
             ? new BrandingDto(DefaultCompanyName, null)
-            : new BrandingDto(setting.CompanyName, setting.LogoPath);
+            : new BrandingDto(setting.CompanyName, setting.LogoPath, setting.ReportHeaderPath);
     }
 
     public async Task<BrandingDto> UpdateBrandingAsync(UpdateBrandingCommand command, CancellationToken ct = default)
@@ -61,16 +68,32 @@ public sealed class SettingsService(
 
         setting.CompanyName = companyName;
         var previousLogo = setting.LogoPath;
+        var previousHeader = setting.ReportHeaderPath;
 
-        if (command.Logo is not null)
+        // Se validan ambas imágenes antes de guardar cualquiera de las dos.
+        await using var logo = command.Logo is null
+            ? null
+            : await ValidateImageAsync(command.Logo, "logo", "El logo", AllowedSignatures.Keys, ct);
+        await using var header = command.ReportHeader is null
+            ? null
+            : await ValidateImageAsync(command.ReportHeader, "reportHeader", "El membrete", ReportHeaderExtensions, ct);
+
+        if (logo is not null)
         {
-            var extension = Path.GetExtension(command.LogoFileName ?? string.Empty).ToLowerInvariant();
-            await using var buffer = await ValidateLogoAsync(command.Logo, extension, command.LogoLength, ct);
-            setting.LogoPath = await fileStorage.SaveAsync(buffer, "branding", extension, ct);
+            setting.LogoPath = await fileStorage.SaveAsync(logo.Content, "branding", logo.Extension, ct);
         }
         else if (command.RemoveLogo)
         {
             setting.LogoPath = null;
+        }
+
+        if (header is not null)
+        {
+            setting.ReportHeaderPath = await fileStorage.SaveAsync(header.Content, "branding", header.Extension, ct);
+        }
+        else if (command.RemoveReportHeader)
+        {
+            setting.ReportHeaderPath = null;
         }
 
         await unitOfWork.SaveChangesAsync(ct);
@@ -80,26 +103,43 @@ public sealed class SettingsService(
             await fileStorage.DeleteAsync(previousLogo, ct);
         }
 
-        return new BrandingDto(setting.CompanyName, setting.LogoPath);
-    }
-
-    private static async Task<MemoryStream> ValidateLogoAsync(Stream logo, string extension, long length, CancellationToken ct)
-    {
-        if (!AllowedSignatures.TryGetValue(extension, out var signatures))
+        if (previousHeader is not null && previousHeader != setting.ReportHeaderPath)
         {
-            throw new ValidationException("logo", "Formato no permitido. Use PNG, JPG o WEBP.");
+            await fileStorage.DeleteAsync(previousHeader, ct);
         }
 
-        if (length is <= 0 or > MaxLogoBytes)
+        return new BrandingDto(setting.CompanyName, setting.LogoPath, setting.ReportHeaderPath);
+    }
+
+    private sealed record ValidatedImage(MemoryStream Content, string Extension) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() => Content.DisposeAsync();
+    }
+
+    /// <param name="field">Campo del formulario al que se asocia el error.</param>
+    /// <param name="subject">"El logo", "El membrete": encabeza los mensajes de error.</param>
+    private static async Task<ValidatedImage> ValidateImageAsync(
+        ImageUpload upload, string field, string subject, IEnumerable<string> allowedExtensions, CancellationToken ct)
+    {
+        var extension = Path.GetExtension(upload.FileName ?? string.Empty).ToLowerInvariant();
+        var allowed = allowedExtensions.ToArray();
+        if (!allowed.Contains(extension) || !AllowedSignatures.TryGetValue(extension, out var signatures))
         {
-            throw new ValidationException("logo", "El logo debe pesar como máximo 2 MB.");
+            var formats = allowed.Contains(".webp") ? "PNG, JPG o WEBP" : "PNG o JPG";
+            throw new ValidationException(field, $"Formato no permitido. Use {formats}.");
+        }
+
+        var sizeError = $"{subject} debe pesar como máximo 2 MB.";
+        if (upload.Length is <= 0 or > MaxLogoBytes)
+        {
+            throw new ValidationException(field, sizeError);
         }
 
         var buffer = new MemoryStream();
-        await logo.CopyToAsync(buffer, ct);
+        await upload.Content.CopyToAsync(buffer, ct);
         if (buffer.Length > MaxLogoBytes)
         {
-            throw new ValidationException("logo", "El logo debe pesar como máximo 2 MB.");
+            throw new ValidationException(field, sizeError);
         }
 
         var bytes = buffer.GetBuffer();
@@ -111,10 +151,10 @@ public sealed class SettingsService(
 
         if (!validSignature)
         {
-            throw new ValidationException("logo", "El archivo no es una imagen válida.");
+            throw new ValidationException(field, "El archivo no es una imagen válida.");
         }
 
         buffer.Position = 0;
-        return buffer;
+        return new ValidatedImage(buffer, extension);
     }
 }

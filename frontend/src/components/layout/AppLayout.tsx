@@ -24,6 +24,11 @@ function findTrail(menus: MenuItem[], pathname: string, trail: MenuItem[] = []):
   return null
 }
 
+/** Pantallas sin opción de menú propia: se muestran dentro de la opción indicada (ruta y título). */
+const ROUTE_PARENTS: [RegExp, string][] = [[/^\/informes\/[^/]+\/editar$/, '/informes/nuevo']]
+
+const menuPathFor = (pathname: string) => ROUTE_PARENTS.find(([pattern]) => pattern.test(pathname))?.[1] ?? pathname
+
 const COLLAPSED_KEY = 'ts:sidebar-collapsed'
 
 const readCollapsed = () => {
@@ -49,7 +54,7 @@ export function AppLayout() {
   const [changingPassword, setChangingPassword] = useState(false)
   const user = useAuthStore((s) => s.user)
   const { pathname } = useLocation()
-  const trail = findTrail(user?.menus ?? [], pathname) ?? []
+  const trail = findTrail(user?.menus ?? [], menuPathFor(pathname)) ?? []
   useDocumentTitle(trail.at(-1)?.title)
 
   // Al cerrar sesión, ProtectedRoute redirige al login automáticamente.

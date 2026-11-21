@@ -5,6 +5,9 @@ export const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPa
 export const CreateReportPage = lazy(() =>
   import('@/features/reports-create/CreateReportPage').then((m) => ({ default: m.CreateReportPage })),
 )
+export const EditReportPage = lazy(() =>
+  import('@/features/reports-create/EditReportPage').then((m) => ({ default: m.EditReportPage })),
+)
 export const MasterTablesPage = lazy(() =>
   import('@/features/master-tables/MasterTablesPage').then((m) => ({ default: m.MasterTablesPage })),
 )

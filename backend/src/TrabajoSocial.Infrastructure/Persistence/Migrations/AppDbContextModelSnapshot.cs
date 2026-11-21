@@ -793,6 +793,295 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                     b.ToTable("Statuses", "catalog");
                 });
 
+            modelBuilder.Entity("TrabajoSocial.Domain.Entities.Reports.SocialReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("AdmissionDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("BirthCountryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("BirthMunicipalityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BirthPlace")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<Guid?>("BirthStateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClinicalDiagnosis")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("ContactAddress")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("ContactFullName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ContactKinshipId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("EducationLevelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FirstNames")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<Guid?>("GenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("GuardianFullName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("GuardianIdentityCard")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<Guid?>("GuardianKinshipId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("HasIpasme")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("HasIvss")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("HomeAddress")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("IdentityCard")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("InsurancePolicy")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPediatric")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastNames")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<Guid?>("MaritalStatusId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MedicalRecordNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MedicalSocialArea")
+                        .HasMaxLength(700)
+                        .HasColumnType("nvarchar(700)");
+
+                    b.Property<string>("Observations")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("OccupationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OtherSocialSecurity")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PassportNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Phone1")
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<string>("Phone2")
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<string>("PhysicalEnvironmentArea")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("ProfessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PsychosocialArea")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("RaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferralServices")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("ReferredBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ReligionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SocialWorkerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SocioeconomicArea")
+                        .HasMaxLength(1500)
+                        .HasColumnType("nvarchar(1500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("WorkAddress")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("WorkPhone")
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<string>("WorkSchedule")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Workplace")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BirthCountryId");
+
+                    b.HasIndex("BirthMunicipalityId");
+
+                    b.HasIndex("BirthStateId");
+
+                    b.HasIndex("ContactKinshipId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("EducationLevelId");
+
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("GuardianKinshipId");
+
+                    b.HasIndex("IdentityCard");
+
+                    b.HasIndex("MaritalStatusId");
+
+                    b.HasIndex("MedicalRecordNumber");
+
+                    b.HasIndex("OccupationId");
+
+                    b.HasIndex("ProfessionId");
+
+                    b.HasIndex("RaceId");
+
+                    b.HasIndex("ReligionId");
+
+                    b.HasIndex("SocialWorkerId", "AdmissionDate");
+
+                    b.ToTable("SocialReports", "dbo");
+                });
+
+            modelBuilder.Entity("TrabajoSocial.Domain.Entities.Reports.SocialReportPhone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AreaCodeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("KinshipId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<Guid>("SocialReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AreaCodeId");
+
+                    b.HasIndex("KinshipId");
+
+                    b.HasIndex("SocialReportId", "Kind", "SortOrder");
+
+                    b.ToTable("SocialReportPhones", "dbo");
+                });
+
             modelBuilder.Entity("TrabajoSocial.Domain.Entities.Security.Menu", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1199,6 +1488,10 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<string>("ReportHeaderPath")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1480,6 +1773,124 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("TrabajoSocial.Domain.Entities.Reports.SocialReport", b =>
+                {
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Country", "BirthCountry")
+                        .WithMany()
+                        .HasForeignKey("BirthCountryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Municipality", "BirthMunicipality")
+                        .WithMany()
+                        .HasForeignKey("BirthMunicipalityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.State", "BirthState")
+                        .WithMany()
+                        .HasForeignKey("BirthStateId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Kinship", null)
+                        .WithMany()
+                        .HasForeignKey("ContactKinshipId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.EducationLevel", "EducationLevel")
+                        .WithMany()
+                        .HasForeignKey("EducationLevelId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Gender", "Gender")
+                        .WithMany()
+                        .HasForeignKey("GenderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Kinship", "GuardianKinship")
+                        .WithMany()
+                        .HasForeignKey("GuardianKinshipId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.MaritalStatus", "MaritalStatus")
+                        .WithMany()
+                        .HasForeignKey("MaritalStatusId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Occupation", "Occupation")
+                        .WithMany()
+                        .HasForeignKey("OccupationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Profession", "Profession")
+                        .WithMany()
+                        .HasForeignKey("ProfessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Race", "Race")
+                        .WithMany()
+                        .HasForeignKey("RaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Religion", "Religion")
+                        .WithMany()
+                        .HasForeignKey("ReligionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.SocialWorkers.SocialWorker", "SocialWorker")
+                        .WithMany()
+                        .HasForeignKey("SocialWorkerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("BirthCountry");
+
+                    b.Navigation("BirthMunicipality");
+
+                    b.Navigation("BirthState");
+
+                    b.Navigation("EducationLevel");
+
+                    b.Navigation("Gender");
+
+                    b.Navigation("GuardianKinship");
+
+                    b.Navigation("MaritalStatus");
+
+                    b.Navigation("Occupation");
+
+                    b.Navigation("Profession");
+
+                    b.Navigation("Race");
+
+                    b.Navigation("Religion");
+
+                    b.Navigation("SocialWorker");
+                });
+
+            modelBuilder.Entity("TrabajoSocial.Domain.Entities.Reports.SocialReportPhone", b =>
+                {
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.AreaCode", "AreaCode")
+                        .WithMany()
+                        .HasForeignKey("AreaCodeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Catalogs.Kinship", "Kinship")
+                        .WithMany()
+                        .HasForeignKey("KinshipId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TrabajoSocial.Domain.Entities.Reports.SocialReport", "SocialReport")
+                        .WithMany("Phones")
+                        .HasForeignKey("SocialReportId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AreaCode");
+
+                    b.Navigation("Kinship");
+
+                    b.Navigation("SocialReport");
+                });
+
             modelBuilder.Entity("TrabajoSocial.Domain.Entities.Security.Menu", b =>
                 {
                     b.HasOne("TrabajoSocial.Domain.Entities.Security.Menu", "Parent")
@@ -1603,6 +2014,11 @@ namespace TrabajoSocial.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TrabajoSocial.Domain.Entities.Catalogs.State", b =>
                 {
                     b.Navigation("Municipalities");
+                });
+
+            modelBuilder.Entity("TrabajoSocial.Domain.Entities.Reports.SocialReport", b =>
+                {
+                    b.Navigation("Phones");
                 });
 
             modelBuilder.Entity("TrabajoSocial.Domain.Entities.Security.Menu", b =>

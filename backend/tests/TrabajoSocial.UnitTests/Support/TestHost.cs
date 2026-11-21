@@ -22,6 +22,7 @@ public sealed class TestHost : IAsyncDisposable
     private readonly ServiceProvider provider;
 
     public FakeCurrentUser CurrentUser { get; } = new();
+    public InMemoryFileStorage Files { get; } = new();
     public FixedTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 16, 12, 0, 0, TimeSpan.Zero));
 
     private TestHost(bool loadReferenceData)
@@ -46,6 +47,7 @@ public sealed class TestHost : IAsyncDisposable
         services.AddInfrastructureServices(configuration);
         services.AddSingleton<ICurrentUserService>(CurrentUser);
         services.AddSingleton<TimeProvider>(Time);
+        services.AddSingleton<IFileStorage>(Files);
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
             options.UseSqlite(connection);
@@ -92,6 +94,30 @@ public sealed class FakeCurrentUser : ICurrentUserService
     public Guid? UserId { get; set; }
     public string? Username { get; set; } = "tester";
     public Guid? RoleId { get; set; }
+}
+
+/// <summary>Almacenamiento de archivos en memoria (en el API son archivos en wwwroot/uploads).</summary>
+public sealed class InMemoryFileStorage : IFileStorage
+{
+    private readonly Dictionary<string, byte[]> files = [];
+
+    public async Task<string> SaveAsync(Stream content, string folder, string extension, CancellationToken ct = default)
+    {
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer, ct);
+        var path = $"/uploads/{folder}/{Guid.NewGuid():N}{extension}";
+        files[path] = buffer.ToArray();
+        return path;
+    }
+
+    public Task DeleteAsync(string publicPath, CancellationToken ct = default)
+    {
+        files.Remove(publicPath);
+        return Task.CompletedTask;
+    }
+
+    public Task<byte[]?> ReadAsync(string publicPath, CancellationToken ct = default)
+        => Task.FromResult(files.GetValueOrDefault(publicPath));
 }
 
 public sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

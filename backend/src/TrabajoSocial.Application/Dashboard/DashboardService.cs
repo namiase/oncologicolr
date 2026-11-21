@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TrabajoSocial.Application.Catalogs;
 using TrabajoSocial.Application.Common.Interfaces;
 using TrabajoSocial.Domain.Constants;
+using TrabajoSocial.Domain.Entities.Reports;
 using TrabajoSocial.Domain.Entities.Security;
 using TrabajoSocial.Domain.Entities.SocialWorkers;
 
@@ -22,6 +23,7 @@ public interface IDashboardService
 public sealed class DashboardService(
     IRepository<SocialWorker> socialWorkers,
     IRepository<User> users,
+    IRepository<SocialReport> reports,
     ICatalogServiceFactory catalogs) : IDashboardService
 {
     public async Task<DashboardSummaryDto> GetSummaryAsync(CancellationToken ct = default)
@@ -35,7 +37,7 @@ public sealed class DashboardService(
             records += await catalogs.Get(definition.Key).CountAsync(ct);
         }
 
-        // Reports = 0 hasta que exista el módulo de informes.
-        return new DashboardSummaryDto(activeSocialWorkers, activeUsers, CatalogRegistry.All.Count, records, 0);
+        var reportCount = await reports.Query().CountAsync(ct);
+        return new DashboardSummaryDto(activeSocialWorkers, activeUsers, CatalogRegistry.All.Count, records, reportCount);
     }
 }

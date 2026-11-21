@@ -1,9 +1,10 @@
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using TrabajoSocial.Application.Common;
 using TrabajoSocial.Application.Common.Exceptions;
 using TrabajoSocial.Application.Common.Interfaces;
 using TrabajoSocial.Application.Common.Models;
 using TrabajoSocial.Domain.Constants;
+using TrabajoSocial.Domain.Entities.Reports;
 using TrabajoSocial.Domain.Entities.SocialWorkers;
 
 namespace TrabajoSocial.Application.SocialWorkers;
@@ -19,8 +20,9 @@ public interface ISocialWorkerService
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
 
-public sealed partial class SocialWorkerService(
+public sealed class SocialWorkerService(
     IRepository<SocialWorker> repository,
+    IRepository<SocialReport> reports,
     IUnitOfWork unitOfWork,
     TimeProvider time) : ISocialWorkerService
 {
@@ -88,26 +90,26 @@ public sealed partial class SocialWorkerService(
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await repository.GetByIdAsync(id, ct) ?? throw NotFound();
+
+        // Sus informes deben seguir mostrando quién los firmó.
+        if (await reports.Query().AnyAsync(r => r.SocialWorkerId == id, ct))
+        {
+            throw new BusinessRuleException(
+                "No se puede eliminar: la trabajadora social tiene informes registrados. Puede inactivarla.");
+        }
+
         repository.Remove(entity);
         await unitOfWork.SaveChangesAsync(ct);
-    }
-
-    /// <summary>Normaliza la cédula a "V-12345678" / "E-12345678". Devuelve null si el formato no es válido.</summary>
-    public static string? NormalizeIdentityCard(string value)
-    {
-        var compact = value.Trim().ToUpperInvariant().Replace(".", "").Replace("-", "").Replace(" ", "");
-        var match = IdentityCardRegex().Match(compact);
-        return match.Success ? $"{match.Groups[1].Value}-{match.Groups[2].Value}" : null;
     }
 
     private async Task ApplyAsync(SocialWorker entity, SocialWorkerUpsertDto dto, Guid? currentId, CancellationToken ct)
     {
         var errors = new Dictionary<string, string[]>();
 
-        var identityCard = NormalizeIdentityCard(dto.IdentityCard);
+        var identityCard = IdentityCards.Normalize(dto.IdentityCard);
         if (identityCard is null)
         {
-            errors["identityCard"] = ["Formato de cédula inválido. Ejemplo: V-12345678."];
+            errors["identityCard"] = [IdentityCards.FormatError];
         }
 
         var currentYear = time.GetUtcNow().Year;
@@ -169,7 +171,4 @@ public sealed partial class SocialWorkerService(
         });
 
     private static NotFoundException NotFound() => new("La trabajadora social solicitada no existe.");
-
-    [GeneratedRegex(@"^([VE])(\d{5,9})$")]
-    private static partial Regex IdentityCardRegex();
 }

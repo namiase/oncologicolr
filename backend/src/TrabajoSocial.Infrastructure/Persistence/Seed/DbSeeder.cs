@@ -210,6 +210,13 @@ public sealed class DbSeeder(
     {
         await SeedCatalogAsync(db.Genders, [("F", "Femenino"), ("M", "Masculino")], ct);
 
+        // Categorías de autorreconocimiento del Censo 2011 (INE) más Indígena. Solo si la tabla está vacía.
+        await SeedCatalogAsync(db.Races,
+        [
+            (null, "Morena"), (null, "Blanca"), (null, "Negra"), (null, "Afrodescendiente"),
+            (null, "Indígena"), (null, "Otra")
+        ], ct);
+
         await SeedCatalogAsync(db.MaritalStatuses,
         [
             (null, "Soltero(a)"), (null, "Casado(a)"), (null, "Divorciado(a)"),

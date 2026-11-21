@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TrabajoSocial.Application.Common.Interfaces;
 using TrabajoSocial.Domain.Common;
 using TrabajoSocial.Domain.Entities.Catalogs;
+using TrabajoSocial.Domain.Entities.Reports;
 using TrabajoSocial.Domain.Entities.Security;
 using TrabajoSocial.Domain.Entities.Settings;
 using TrabajoSocial.Domain.Entities.SocialWorkers;
@@ -36,6 +37,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     // Negocio
     public DbSet<SocialWorker> SocialWorkers => Set<SocialWorker>();
+    public DbSet<SocialReport> SocialReports => Set<SocialReport>();
+    public DbSet<SocialReportPhone> SocialReportPhones => Set<SocialReportPhone>();
     public DbSet<CompanySetting> CompanySettings => Set<CompanySetting>();
     public DbSet<SeedHistory> SeedHistory => Set<SeedHistory>();
 

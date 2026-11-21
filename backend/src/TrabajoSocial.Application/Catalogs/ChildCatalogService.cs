@@ -19,6 +19,10 @@ public sealed class ChildCatalogService<TEntity, TParent>(
     public override Task<int> CountByParentAsync(Guid parentId, CancellationToken ct = default)
         => Repository.Query().CountAsync(e => e.ParentId == parentId, ct);
 
+    /// <summary>Los catálogos con padre (estados, municipios) no admiten "Otro": el padre sería ambiguo.</summary>
+    public override Task<Guid> FindOrCreateAsync(string name, string? code = null, CancellationToken ct = default)
+        => throw new NotSupportedException($"{Definition.Name} no admite valores nuevos desde los formularios.");
+
     protected override IQueryable<TEntity> FilterByParent(IQueryable<TEntity> query, Guid parentId)
         => query.Where(e => e.ParentId == parentId);
 

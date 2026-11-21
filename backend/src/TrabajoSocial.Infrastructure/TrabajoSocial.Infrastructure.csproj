@@ -5,11 +5,14 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="PDFsharp" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Datos de referencia (países, estados, municipios, listas) incrustados en el ensamblado. -->
     <EmbeddedResource Include="Persistence/Seed/Data/*.json" LogicalName="seed.%(Filename)%(Extension)" />
+    <!-- Fuente de los PDF (Liberation Sans, SIL OFL 1.1): igual en Windows y en Linux. -->
+    <EmbeddedResource Include="Reports/Fonts/*.ttf" LogicalName="fonts.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

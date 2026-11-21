@@ -5,10 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TrabajoSocial.Application.Auth;
 using TrabajoSocial.Application.Common.Interfaces;
+using TrabajoSocial.Application.Reports;
 using TrabajoSocial.Infrastructure.Persistence;
 using TrabajoSocial.Infrastructure.Persistence.Interceptors;
 using TrabajoSocial.Infrastructure.Persistence.Repositories;
 using TrabajoSocial.Infrastructure.Persistence.Seed;
+using TrabajoSocial.Infrastructure.Reports;
 using TrabajoSocial.Infrastructure.Security;
 
 namespace TrabajoSocial.Infrastructure;
@@ -50,6 +52,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();
+        services.AddSingleton<ISocialReportPdfRenderer, SocialReportPdfRenderer>();
 
         services.AddOptions<SeedOptions>().Bind(configuration.GetSection(SeedOptions.SectionName));
         services.AddScoped<ReferenceDataSeeder>();

@@ -192,9 +192,60 @@ Para **agregar un catálogo nuevo**:
 
 No hace falta código de frontend: la pantalla aparece sola en *Configuración → Tablas maestras*.
 
+### Informes (Entrevista preliminar)
+
+En *Crear informe* (permiso `CREATE_REPORT`) la trabajadora social llena en pantalla la **Entrevista preliminar** del formulario en papel. Al guardar, se descarga un **PDF de 2 hojas tamaño Carta**, con las mismas secciones y en el mismo orden, listo para imprimir.
+
+**Contenido**
+
+- **Hoja 1, identificación del paciente:** historia clínica, fecha de ingreso, datos personales, nacimiento, dirección, seguridad social, trabajo, representante (paciente de pediatría) y familiares o conocidos.
+- **Hoja 2, evaluación social:** áreas médico social, psicosocial, socioeconómica y físico ambiental; diagnóstico clínico, servicios a que refieren, observaciones y la firma de la trabajadora social tratante (nombre, C.I., Nº ANTS y colegio).
+- **Datos:** se guardan en `dbo.SocialReports`. Los catálogos se referencian por FK: religión, sexo, raza, estado civil, grado de instrucción, profesión u oficio, parentesco, país, estado y municipio.
+- **Teléfonos:** se guardan en `dbo.SocialReportPhones`: código de área (tabla maestra *Códigos de área*) + número de 7 dígitos. Con "Agregar otro teléfono" caben hasta 4 del paciente, 2 del trabajo y 6 de familiares, cada uno de estos con su parentesco. En el PDF se escriben juntos: `0414-1234567 / 0212-8701234`.
+- **Columnas en desuso:** `Phone1`, `Phone2`, `WorkPhone`, `ContactPhone` y `ContactKinshipId` de la primera versión siguen en `dbo.SocialReports`, sin uso. La migración `ReportPhones` copió su contenido a `SocialReportPhones`. No se eliminaron porque borrar columnas con datos lo decide el usuario: si se quiere, se genera una migración que las elimine y se aplica a mano.
+
+**Ayudas para llenarlo rápido**
+
+- **Listas con búsqueda:** todas las listas se filtran escribiendo, sin importar acentos ni mayúsculas (`SearchableSelect`, en `components/ui`).
+- **Opción "Otro":** religión, raza, estado civil, grado de instrucción, profesión u oficio, parentesco y código de área la tienen. Al elegirla, o al escribir un valor que no está y elegir "Agregar «…»", aparece un campo para escribirlo. Al guardar, el valor se agrega a la tabla maestra con sus mismas reglas: activo, sin duplicados (sin importar mayúsculas) y con la primera letra en mayúscula. Si ya existía, se reutiliza. Los códigos de área nuevos deben tener 4 dígitos y empezar por 0 (p. ej. `0261`).
+- La fecha de ingreso es la de hoy por defecto.
+- La edad se calcula sola con la fecha de nacimiento.
+- "Paciente de pediatría" se marca sola si el paciente es menor de 18 años.
+- Venezuela viene preseleccionada como país de nacimiento.
+- La cédula toma su formato mientras se escribe (`V-12345678`).
+- **Borrador:** se guarda en la pestaña (`sessionStorage`, por usuario). Si la sesión se cierra por inactividad a mitad de una entrevista, al volver se recupera. Se borra al guardar el informe o al descartarlo.
+
+**Regla de las 2 hojas**
+
+- Cada campo tiene una longitud máxima (`Domain/Entities/Reports/SocialReportLimits.cs`, replicada en `frontend/src/features/reports-create/reportSchema.ts`). Los textos largos muestran un contador.
+- El PDF (`Infrastructure/Reports/SocialReportPdfRenderer.cs`, con PDFsharp, licencia MIT) es de posición fija: las filas reparten toda la hoja y los renglones vacíos también se dibujan. Si un texto no cabe en su caja, la letra se achica (de 10 a 6,5 pt). Nunca se agrega una tercera hoja.
+- La fuente Liberation Sans (SIL OFL 1.1) va incrustada en el ensamblado, así el PDF se ve igual en Windows y en Linux.
+- Si cambia un límite, revise el PDF con todos los campos al máximo:
+
+  ```bash
+  REPORT_PDF_SAMPLES=/ruta/salida dotnet test --filter Write_samples_when_requested
+  ```
+
+**Membrete**
+
+En *Configuración → Empresa y logo* se sube la imagen del encabezado oficial (banner del ministerio y logos; PNG o JPG). Se imprime a lo ancho, arriba de la hoja 1, seguida del nombre de la empresa y el título "ENTREVISTA PRELIMINAR". Sin membrete, se usan el logo (si es PNG o JPG) y el nombre.
+
+**Quién ve qué**
+
+La trabajadora tratante de un informe es la vinculada al usuario que lo crea: no se elige en el formulario.
+
+| Usuario | Puede |
+|---|---|
+| Trabajadora social | Crear informes, que firma ella. Ver, descargar y editar los que creó o en los que es la tratante. Al descargar no puede cambiar la firma. |
+| Administrador | Ver, descargar y editar todos. Al descargar el PDF elige quién firma (por defecto, la trabajadora del informe). Si no tiene trabajadora vinculada, sus informes quedan sin trabajadora y, sin elegir una, la firma sale en blanco para llenarla a mano. |
+| Usuario sin trabajadora vinculada (no administrador) | No puede crear informes: debe vincularse en *Usuarios*. |
+
+- Para cualquier otro usuario, el informe "no existe": la API responde 404, no 403.
+- Una trabajadora social con informes no se puede eliminar, porque los informes deben seguir mostrando quién los firmó. Puede inactivarse.
+
 ## Pruebas
 
 ```bash
-cd backend && dotnet test     # 41 pruebas: auditoría, soft delete, unicidad, jerarquías, login, bloqueo, inactividad, revocación, datos precargados, usuarios
+cd backend && dotnet test     # 60 pruebas: auditoría, soft delete, unicidad, jerarquías, login, bloqueo, inactividad, revocación, datos precargados, usuarios, informes y PDF de 2 hojas
 cd frontend && npm run build && npm run lint
 ```
