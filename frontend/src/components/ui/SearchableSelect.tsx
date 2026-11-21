@@ -61,6 +61,12 @@ const normalize = (text: string) =>
 /** Más opciones que estas no se dibujan: se pide afinar la búsqueda. */
 const MAX_VISIBLE = 150
 
+/**
+ * Listas cortas (Sí/No, sexo…) sin opción "Otro" se abren sin caja de búsqueda: el foco va a la
+ * lista y en el celular no se abre el teclado para elegir entre dos opciones.
+ */
+const SEARCH_MIN_OPTIONS = 8
+
 interface Placement {
   top: number
   left: number
@@ -112,6 +118,7 @@ export function SearchableSelect({
     [ref],
   )
 
+  const searchable = (others?.length ?? 0) > 0 || options.length >= SEARCH_MIN_OPTIONS
   const selectedOption = options.find((o) => o.value === value)
   const selectedOther = others?.find((o) => o.value === value)
   const display = selectedOption ? (selectedOption.short ?? selectedOption.label) : selectedOther?.label
@@ -175,14 +182,14 @@ export function SearchableSelect({
     if (disabled) return
     place()
     setFieldName(ariaLabel ?? triggerRef.current?.labels?.[0]?.textContent?.replace(/\*\s*$/, '').trim() ?? undefined)
-    setQuery(initialQuery)
+    setQuery(searchable ? initialQuery : '')
     setOpen(true)
   }
 
-  // Al abrir: foco en la búsqueda y la opción elegida activa.
+  // Al abrir: foco en la búsqueda (o en la lista, si es corta) y la opción elegida activa.
   useEffect(() => {
     if (!open) return
-    searchRef.current?.focus()
+    ;(searchRef.current ?? listRef.current)?.focus()
   }, [open])
 
   useEffect(() => {
@@ -243,7 +250,7 @@ export function SearchableSelect({
     }
   }
 
-  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const onListKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault()
@@ -314,27 +321,39 @@ export function SearchableSelect({
             transform: placement.above ? 'translateY(-100%)' : undefined,
           }}
         >
-          <div className="relative border-b border-slate-200 p-2">
-            <Search className="pointer-events-none absolute top-1/2 left-4.5 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
-            <input
-              ref={searchRef}
-              type="text"
-              role="combobox"
-              aria-expanded
-              aria-controls={listId}
-              aria-autocomplete="list"
-              aria-activedescendant={items[active] ? optionId(active) : undefined}
-              aria-label={fieldName ? `Buscar en ${fieldName}` : 'Buscar'}
-              autoComplete="off"
-              placeholder="Buscar…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={onSearchKeyDown}
-              className="h-9 w-full rounded-lg border-0 bg-slate-50 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-slate-200 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 focus:outline-none"
-            />
-          </div>
+          {searchable && (
+            <div className="relative border-b border-slate-200 p-2">
+              <Search className="pointer-events-none absolute top-1/2 left-4.5 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
+              <input
+                ref={searchRef}
+                type="text"
+                role="combobox"
+                aria-expanded
+                aria-controls={listId}
+                aria-autocomplete="list"
+                aria-activedescendant={items[active] ? optionId(active) : undefined}
+                aria-label={fieldName ? `Buscar en ${fieldName}` : 'Buscar'}
+                autoComplete="off"
+                placeholder="Buscar…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={onListKeyDown}
+                className="h-9 w-full rounded-lg border-0 bg-slate-50 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-slate-200 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 focus:outline-none"
+              />
+            </div>
+          )}
 
-          <ul ref={listRef} id={listId} role="listbox" aria-label={fieldName} className="min-h-0 flex-1 overflow-y-auto p-1">
+          <ul
+            ref={listRef}
+            id={listId}
+            role="listbox"
+            aria-label={fieldName}
+            // Lista corta sin búsqueda: la lista recibe el foco y se maneja con las flechas.
+            tabIndex={searchable ? undefined : -1}
+            aria-activedescendant={!searchable && items[active] ? optionId(active) : undefined}
+            onKeyDown={searchable ? undefined : onListKeyDown}
+            className="min-h-0 flex-1 overflow-y-auto p-1 focus:outline-none"
+          >
             {loading && <li className="px-3 py-2 text-sm text-slate-500">Cargando…</li>}
             {!loading && items.every((item) => item.kind !== 'option') && query.trim() !== '' && (
               <li className="px-3 py-2 text-sm text-slate-500">Sin resultados para «{query.trim()}».</li>
