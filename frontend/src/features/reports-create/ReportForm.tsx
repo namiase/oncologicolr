@@ -534,15 +534,7 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
         {longText('observations', 'Observaciones', LIMITS.observations, 3)}
       </Section>
 
-      <Section
-        number={8}
-        title="Trabajador(a) social tratante"
-        description={
-          isAdministrator
-            ? 'Al descargar el PDF puede elegir otra trabajadora social para la firma.'
-            : 'Firma el informe impreso: es la vinculada a su usuario.'
-        }
-      >
+      <Section number={8} title="Trabajador(a) social tratante" description={signerDescription(context, initial)}>
         <SignerSummary context={context} initial={initial} />
       </Section>
 
@@ -587,6 +579,17 @@ function AgeField({
       <Input id="rf-age" value={age ?? ''} placeholder="—" readOnly tabIndex={-1} aria-describedby="rf-age-hint" />
     </Field>
   )
+}
+
+/**
+ * Una sola indicación por caso: si no hay trabajadora que mostrar, el texto de SignerSummary ya
+ * explica que se elige al descargar, y la descripción de la sección no lo repite.
+ */
+function signerDescription(context: SocialReportContext, initial?: SocialReport) {
+  if (!context.canChooseSocialWorker) return 'Firma el informe impreso: es la vinculada a su usuario.'
+  const keepsReportWorker = initial && context.socialWorker?.id !== initial.socialWorkerId
+  const shown = keepsReportWorker ? initial.socialWorkerName : context.socialWorker?.fullName
+  return shown ? 'Al descargar el PDF puede elegir otra trabajadora social para la firma.' : undefined
 }
 
 function SignerSummary({ context, initial }: { context: SocialReportContext; initial?: SocialReport }) {
