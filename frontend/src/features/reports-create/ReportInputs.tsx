@@ -108,17 +108,18 @@ export function CountedTextarea({
 }: ComponentProps<'textarea'> & { value: string; maxLength: number; counterId: string; invalid?: boolean }) {
   const near = value.length >= maxLength * 0.9
   return (
-    <div className="relative">
-      <Textarea value={value} maxLength={maxLength} className={cn('pb-6', className)} {...props} />
-      <span
+    // El contador va debajo, no dentro: dentro tapaba el asa para agrandar y el texto pasaba por debajo.
+    <div>
+      <Textarea value={value} maxLength={maxLength} className={className} {...props} />
+      <p
         id={counterId}
         className={cn(
-          'pointer-events-none absolute right-3 bottom-1.5 text-xs tabular-nums',
+          'mt-1 text-right text-xs tabular-nums',
           near ? 'font-semibold text-amber-700 dark:text-amber-400' : 'text-slate-500',
         )}
       >
         {value.length.toLocaleString('es-VE')} / {maxLength.toLocaleString('es-VE')}
-      </span>
+      </p>
     </div>
   )
 }
