@@ -578,7 +578,16 @@ function AgeField({
 
   return (
     <Field id="rf-age" label="Edad" hint="Se calcula con la fecha de nacimiento." className="lg:col-span-2">
-      <Input id="rf-age" value={age ?? ''} placeholder="—" readOnly tabIndex={-1} aria-describedby="rf-age-hint" />
+      {/* Fondo hundido y sin sombra: se lee como dato calculado, no como campo para escribir. */}
+      <Input
+        id="rf-age"
+        value={age ?? ''}
+        placeholder="—"
+        readOnly
+        tabIndex={-1}
+        aria-describedby="rf-age-hint"
+        className="cursor-default bg-slate-50 shadow-none"
+      />
     </Field>
   )
 }
