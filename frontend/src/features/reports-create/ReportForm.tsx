@@ -436,11 +436,12 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
       </Section>
 
       <Section number={2} title="Seguridad social y referencia">
-        {select('hasIvss', 'IVSS', YES_NO, { className: 'lg:col-span-1', placeholder: 'Sin indicar' })}
-        {select('hasIpasme', 'IPASME', YES_NO, { className: 'lg:col-span-1', placeholder: 'Sin indicar' })}
+        {/* IVSS e IPASME ocupan una columna solo desde xl: en 1024 px "Sin indicar" no cabía. */}
+        {select('hasIvss', 'IVSS', YES_NO, { className: 'lg:col-span-2 xl:col-span-1', placeholder: 'Sin indicar' })}
+        {select('hasIpasme', 'IPASME', YES_NO, { className: 'lg:col-span-2 xl:col-span-1', placeholder: 'Sin indicar' })}
         {text('insurancePolicy', 'Póliza', LIMITS.socialSecurity, { className: 'lg:col-span-2' })}
-        {text('otherSocialSecurity', 'Otros', LIMITS.socialSecurity, { className: 'lg:col-span-2' })}
-        {text('referredBy', 'Referido por', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-6' })}
+        {text('otherSocialSecurity', 'Otros', LIMITS.socialSecurity, { className: 'lg:col-span-3 xl:col-span-2' })}
+        {text('referredBy', 'Referido por', LIMITS.fullLine, { className: 'sm:col-span-2 lg:col-span-3 xl:col-span-6' })}
       </Section>
 
       <Section number={3} title="Trabajo">
