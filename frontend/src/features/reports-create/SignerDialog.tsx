@@ -10,7 +10,14 @@ import { downloadReportPdf } from './reportsApi'
 export interface DownloadTarget {
   id: string
   socialWorkerId: string | null
+  medicalRecordNumber: string
+  /** Lista de informes: "Apellidos, Nombres"; el informe completo trae los dos campos. */
+  patientName?: string
+  lastNames?: string
+  firstNames?: string
 }
+
+const patientOf = (report: DownloadTarget) => report.patientName ?? [report.lastNames, report.firstNames].filter(Boolean).join(', ')
 
 /**
  * Solo administradores: antes de descargar el PDF eligen quién firma. Por defecto, la trabajadora
@@ -35,7 +42,7 @@ export function SignerDialog({ report, onClose }: { report: DownloadTarget; onCl
       open
       onClose={onClose}
       title="Descargar PDF"
-      description="Elija la trabajadora social que firma el informe impreso."
+      description={`${patientOf(report)} · Historia clínica ${report.medicalRecordNumber}. Elija la trabajadora social que firma el informe impreso.`}
       size="sm"
       dismissible={!downloading}
       footer={
