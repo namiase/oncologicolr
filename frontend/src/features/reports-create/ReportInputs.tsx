@@ -1,4 +1,5 @@
 import { useState, type ComponentProps, type ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/Feedback'
 import { Input, Textarea } from '@/components/ui/Input'
 import { controlClass } from '@/components/ui/fieldStyles'
@@ -61,19 +62,26 @@ export function IdentityCardInput({ id, value, onChange, onBlur, invalid, descri
 
   return (
     <div className="flex gap-2">
-      <select
-        aria-label="Nacionalidad"
-        value={prefix}
-        onChange={(e) => {
-          const next = e.target.value as Prefix
-          setLocalPrefix(next)
-          emit(next, number)
-        }}
-        className={cn(controlClass(invalid), 'h-10 w-18 shrink-0 pr-7')}
-      >
-        <option value="V">V</option>
-        <option value="E">E</option>
-      </select>
+      {/* Flecha propia (appearance-none) para verse igual que las listas con búsqueda del formulario. */}
+      <div className="relative w-18 shrink-0">
+        <select
+          aria-label="Nacionalidad"
+          value={prefix}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
+          onBlur={onBlur}
+          onChange={(e) => {
+            const next = e.target.value as Prefix
+            setLocalPrefix(next)
+            emit(next, number)
+          }}
+          className={cn(controlClass(invalid), 'h-10 appearance-none pr-7')}
+        >
+          <option value="V">V</option>
+          <option value="E">E</option>
+        </select>
+        <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
+      </div>
       <Input
         id={id}
         inputMode="numeric"
