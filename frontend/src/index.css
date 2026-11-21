@@ -39,6 +39,12 @@
 @layer base {
   html {
     color-scheme: light;
+    /*
+     * La barra superior (h-16) y la barra fija de guardar de los formularios tapan los bordes:
+     * al enfocar con Tab o al saltar al primer error, el campo queda visible entre ambas.
+     */
+    scroll-padding-top: 5rem;
+    scroll-padding-bottom: 7.5rem;
   }
 
   /*
