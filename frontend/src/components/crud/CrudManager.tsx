@@ -5,8 +5,9 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Card, EmptyState } from '@/components/ui/Feedback'
-import { Input, Select } from '@/components/ui/Input'
+import { Input } from '@/components/ui/Input'
 import { Pagination } from '@/components/ui/Pagination'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { getErrorMessage } from '@/lib/errors'
 import { formatNumber } from '@/lib/format'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
@@ -146,24 +147,32 @@ export function CrudManager<TItem extends CrudEntity, TForm extends FieldValues>
           />
         </div>
         {resource.filters?.parent && (
-          <Select
-            value={parentId}
-            onChange={(e) => setParentId(e.target.value)}
-            aria-label={`Filtrar por ${resource.filters.parent.label}`}
-            placeholder={`${resource.filters.parent.label}: todos`}
-            options={(parents.data ?? []).map((p) => ({ value: p.id, label: p.name, group: p.parentName ?? undefined }))}
-            className="md:w-56"
-          />
+          <div className="md:w-56">
+            <SearchableSelect
+              id="crud-filter-parent"
+              value={parentId}
+              onChange={setParentId}
+              ariaLabel={`Filtrar por ${resource.filters.parent.label}`}
+              placeholder={`${resource.filters.parent.label}: todos`}
+              emptyLabel="Todos"
+              loading={parents.isPending}
+              options={(parents.data ?? []).map((p) => ({ value: p.id, label: p.name, group: p.parentName ?? undefined }))}
+            />
+          </div>
         )}
         {resource.filters?.status !== false && (
-          <Select
-            value={statusId}
-            onChange={(e) => setStatusId(e.target.value)}
-            aria-label="Filtrar por estatus"
-            placeholder="Estatus: todos"
-            options={(statuses.data ?? []).map((s) => ({ value: s.id, label: s.name }))}
-            className="md:w-44"
-          />
+          <div className="md:w-44">
+            <SearchableSelect
+              id="crud-filter-status"
+              value={statusId}
+              onChange={setStatusId}
+              ariaLabel="Filtrar por estatus"
+              placeholder="Estatus: todos"
+              emptyLabel="Todos"
+              loading={statuses.isPending}
+              options={(statuses.data ?? []).map((s) => ({ value: s.id, label: s.name }))}
+            />
+          </div>
         )}
         {hasFilters && (
           <Button variant="ghost" icon={<X className="size-4" />} onClick={clearFilters}>

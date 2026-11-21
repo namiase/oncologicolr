@@ -5,7 +5,7 @@ import { Database, RefreshCw } from 'lucide-react'
 import { CrudManager } from '@/components/crud'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState, PageHeader, Spinner } from '@/components/ui/Feedback'
-import { Select } from '@/components/ui/Input'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { usePermissions } from '@/features/auth/usePermissions'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -61,13 +61,15 @@ export function MasterTablesPage() {
       <PageHeader title="Tablas maestras" description="Catálogos generales que alimentan los formularios del sistema." />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
         {/* Selector en móvil */}
-        <Select
-          className="lg:hidden"
-          aria-label="Tabla maestra"
-          value={catalogKey ?? ''}
-          onChange={(e) => navigate(`${BASE}/${e.target.value}`)}
-          options={definitions.data.map((d) => ({ value: d.key, label: `${d.group} · ${d.name}` }))}
-        />
+        <div className="lg:hidden">
+          <SearchableSelect
+            id="master-table-picker"
+            ariaLabel="Tabla maestra"
+            value={catalogKey ?? ''}
+            onChange={(key) => navigate(`${BASE}/${key}`)}
+            options={definitions.data.map((d) => ({ value: d.key, label: d.name, group: d.group }))}
+          />
+        </div>
 
         {/* Lista agrupada en escritorio */}
         <nav aria-label="Tablas maestras" className="hidden lg:block">

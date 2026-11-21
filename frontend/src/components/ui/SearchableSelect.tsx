@@ -41,6 +41,9 @@ interface SearchableSelectProps {
   describedBy?: string
   /** Nombre accesible si no hay un <label for> (p. ej. en filas de teléfonos). */
   ariaLabel?: string
+  /** Se anuncia como obligatorio (el asterisco de la etiqueta es decorativo). */
+  required?: boolean
+  autoFocus?: boolean
   className?: string
   ref?: Ref<HTMLButtonElement>
 }
@@ -94,6 +97,8 @@ export function SearchableSelect({
   loading,
   describedBy,
   ariaLabel,
+  required,
+  autoFocus,
   className,
   ref,
 }: SearchableSelectProps) {
@@ -298,6 +303,8 @@ export function SearchableSelect({
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         aria-label={ariaLabel}
+        aria-required={required || undefined}
+        autoFocus={autoFocus}
         disabled={disabled}
         onClick={() => (open ? close(false) : openList())}
         onKeyDown={onTriggerKeyDown}

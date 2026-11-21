@@ -1,7 +1,8 @@
 import { Controller, type Control, type FieldValues, type UseFormRegister, type FieldError } from 'react-hook-form'
 import { Field } from '@/components/ui/Field'
 import { describedBy } from '@/components/ui/fieldStyles'
-import { Input, Select, Textarea, type SelectOption } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
+import { SearchableSelect, type SearchableOption } from '@/components/ui/SearchableSelect'
 import type { FieldConfig, FormMode } from './types'
 import { useLookup, useStatuses } from './useCrudResource'
 
@@ -114,14 +115,26 @@ interface OptionsSelectProps<TForm extends FieldValues, TItem> {
   value: string
   onChange: (value: string) => void
   onBlur: () => void
-  ref: React.Ref<HTMLSelectElement>
+  ref: React.Ref<HTMLButtonElement>
 }
 
-function OptionsSelect<TForm extends FieldValues, TItem>({ field, item, onChange, ...props }: OptionsSelectProps<TForm, TItem>) {
+/** Lista de opciones de un formulario CRUD: la misma lista con búsqueda que el resto del sistema. */
+function OptionsSelect<TForm extends FieldValues, TItem>({
+  id,
+  invalid,
+  autoFocus,
+  'aria-describedby': ariaDescribedBy,
+  field,
+  item,
+  value,
+  onChange,
+  onBlur,
+  ref,
+}: OptionsSelectProps<TForm, TItem>) {
   const statuses = useStatuses()
   const lookup = useLookup(field.type === 'lookup' ? field.lookupPath : undefined)
 
-  let options: SelectOption[] = field.options ?? []
+  let options: SearchableOption[] = field.options ?? []
   let loading = false
   if (field.type === 'status') {
     options = (statuses.data ?? []).map((s) => ({ value: s.id, label: s.name }))
@@ -135,12 +148,21 @@ function OptionsSelect<TForm extends FieldValues, TItem>({ field, item, onChange
   }
 
   return (
-    <Select
-      {...props}
+    <SearchableSelect
+      id={id}
+      ref={ref}
+      value={value}
       options={options}
-      disabled={loading}
-      placeholder={loading ? 'Cargando…' : field.placeholder ?? 'Seleccione…'}
-      onChange={(e) => onChange(e.target.value)}
+      loading={loading}
+      invalid={invalid}
+      required={field.required}
+      autoFocus={autoFocus}
+      describedBy={ariaDescribedBy}
+      placeholder={field.placeholder ?? 'Seleccione…'}
+      // Un campo opcional se puede volver a dejar vacío (p. ej. "Sin vincular").
+      emptyLabel={field.required ? undefined : (field.placeholder ?? 'Sin indicar')}
+      onChange={onChange}
+      onBlur={onBlur}
     />
   )
 }

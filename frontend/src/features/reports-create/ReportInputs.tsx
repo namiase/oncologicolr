@@ -1,8 +1,7 @@
 import { useState, type ComponentProps, type ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/Feedback'
 import { Input, Textarea } from '@/components/ui/Input'
-import { controlClass } from '@/components/ui/fieldStyles'
+import { SearchableSelect, type SearchableOption } from '@/components/ui/SearchableSelect'
 import { cn } from '@/lib/cn'
 
 /** Sección numerada del formulario, en el mismo orden que el formulario en papel. */
@@ -43,6 +42,11 @@ export function Section({
 
 type Prefix = 'V' | 'E'
 
+const NATIONALITIES: SearchableOption[] = [
+  { value: 'V', label: 'V (venezolano)', short: 'V' },
+  { value: 'E', label: 'E (extranjero)', short: 'E' },
+]
+
 interface CompositeInputProps {
   id: string
   value: string
@@ -62,25 +66,20 @@ export function IdentityCardInput({ id, value, onChange, onBlur, invalid, descri
 
   return (
     <div className="flex gap-2">
-      {/* Flecha propia (appearance-none) para verse igual que las listas con búsqueda del formulario. */}
-      <div className="relative w-18 shrink-0">
-        <select
-          aria-label="Nacionalidad"
+      <div className="w-18 shrink-0">
+        <SearchableSelect
+          id={`${id}-nationality`}
+          ariaLabel="Nacionalidad"
           value={prefix}
-          aria-invalid={invalid || undefined}
-          aria-describedby={describedBy}
+          options={NATIONALITIES}
+          invalid={invalid}
+          describedBy={describedBy}
           onBlur={onBlur}
-          onChange={(e) => {
-            const next = e.target.value as Prefix
-            setLocalPrefix(next)
-            emit(next, number)
+          onChange={(next) => {
+            setLocalPrefix(next as Prefix)
+            emit(next as Prefix, number)
           }}
-          className={cn(controlClass(invalid), 'h-10 appearance-none pr-7')}
-        >
-          <option value="V">V</option>
-          <option value="E">E</option>
-        </select>
-        <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
+        />
       </div>
       <Input
         id={id}

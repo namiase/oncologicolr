@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { ChartColumn, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState, PageHeader } from '@/components/ui/Feedback'
 import { Field } from '@/components/ui/Field'
-import { Input, Select } from '@/components/ui/Input'
+import { Input } from '@/components/ui/Input'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { useLookup } from '@/components/crud/useCrudResource'
 
 /** Vista inicial de reportes: filtros listos, a la espera del módulo de informes. */
 export function ReportsPage() {
   const socialWorkers = useLookup('/social-workers/lookup')
+  const [workerId, setWorkerId] = useState('')
 
   return (
     <>
@@ -24,9 +27,13 @@ export function ReportsPage() {
             <Input id="report-to" type="date" />
           </Field>
           <Field id="report-worker" label="Trabajadora social">
-            <Select
+            <SearchableSelect
               id="report-worker"
+              value={workerId}
+              onChange={setWorkerId}
               placeholder="Todas"
+              emptyLabel="Todas"
+              loading={socialWorkers.isPending}
               options={(socialWorkers.data ?? []).map((w) => ({ value: w.id, label: w.name }))}
             />
           </Field>

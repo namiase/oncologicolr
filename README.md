@@ -206,7 +206,7 @@ En *Crear informe* (permiso `CREATE_REPORT`) la trabajadora social llena en pant
 
 **Ayudas para llenarlo rápido**
 
-- **Listas con búsqueda:** todas las listas se filtran escribiendo, sin importar acentos ni mayúsculas (`SearchableSelect`, en `components/ui`).
+- **Listas con búsqueda:** todas las listas se filtran escribiendo, sin importar acentos ni mayúsculas (`SearchableSelect`, en `components/ui`). Es la única lista desplegable del sistema: también la usan los formularios y filtros de las tablas maestras, usuarios, reportes y la paginación. Con menos de 8 opciones y sin "Otro" se abre sin caja de búsqueda.
 - **Opción "Otro":** religión, raza, estado civil, grado de instrucción, profesión u oficio, parentesco y código de área la tienen. Al elegirla, o al escribir un valor que no está y elegir "Agregar «…»", aparece un campo para escribirlo. Al guardar, el valor se agrega a la tabla maestra con sus mismas reglas: activo, sin duplicados (sin importar mayúsculas) y con la primera letra en mayúscula. Si ya existía, se reutiliza. Los códigos de área nuevos deben tener 4 dígitos y empezar por 0 (p. ej. `0261`).
 - La fecha de ingreso es la de hoy por defecto.
 - La edad se calcula sola con la fecha de nacimiento.

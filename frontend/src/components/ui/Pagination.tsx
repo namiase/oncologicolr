@@ -1,6 +1,8 @@
+import { useId } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatNumber } from '@/lib/format'
 import { Button } from './Button'
+import { SearchableSelect } from './SearchableSelect'
 
 interface PaginationProps {
   page: number
@@ -21,6 +23,7 @@ export function Pagination({
   onPageSizeChange,
   pageSizes = [10, 25, 50],
 }: PaginationProps) {
+  const sizeId = useId()
   const from = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, totalCount)
 
@@ -31,19 +34,19 @@ export function Pagination({
         <span className="font-medium text-slate-900">{formatNumber(totalCount)}</span>
       </p>
       <div className="flex items-center gap-3">
-        <label className="flex items-center gap-2">
-          <span className="hidden sm:inline">Por página</span>
-          <select
-            className="h-10 rounded-md border-0 lg:h-8 bg-surface pl-2 pr-7 text-sm ring-1 ring-inset ring-control focus:ring-2 focus:ring-brand-600"
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            aria-label="Registros por página"
-          >
-            {pageSizes.map((size) => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
-        </label>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline" aria-hidden>
+            Por página
+          </span>
+          <SearchableSelect
+            id={sizeId}
+            className="w-20"
+            ariaLabel="Registros por página"
+            value={String(pageSize)}
+            onChange={(size) => onPageSizeChange(Number(size))}
+            options={pageSizes.map((size) => ({ value: String(size), label: String(size) }))}
+          />
+        </div>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => onPageChange(page - 1)} disabled={page <= 1} aria-label="Página anterior">
             <ChevronLeft className="size-4" />
