@@ -275,8 +275,9 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
 
   return (
     <div>
+      {/* En celular el número y el parentesco se estiran para que el botón de quitar quede en la misma fila. */}
       <div className="flex flex-wrap items-start gap-2">
-        <div className="w-32 shrink-0">
+        <div className="w-28 shrink-0 sm:w-32">
           <Controller
             control={control}
             name={`${base}.areaCodeId`}
@@ -337,7 +338,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
               inputMode="numeric"
               autoComplete="off"
               placeholder="1234567"
-              className="w-32"
+              className="w-auto min-w-28 flex-1 sm:w-32 sm:flex-none"
               value={field.value}
               invalid={invalid('number')}
               aria-describedby={describe}
@@ -348,7 +349,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
         />
         {kinships && (
           <>
-            <div className="w-52">
+            <div className="min-w-40 flex-1 sm:w-52 sm:flex-none">
               <Controller
                 control={control}
                 name={`${base}.kinshipId`}
@@ -390,7 +391,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                     aria-label={`Parentesco nuevo del teléfono ${n}`}
                     placeholder="Parentesco"
                     maxLength={otherKinshipMax}
-                    className="w-44"
+                    className="w-auto min-w-40 flex-1 sm:w-44 sm:flex-none"
                     value={field.value}
                     invalid={invalid('kinshipOther')}
                     aria-describedby={describe}
