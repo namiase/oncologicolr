@@ -1,10 +1,11 @@
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { renderMenuIcon } from '@/lib/icons'
 import { useAuthStore } from '@/stores/authStore'
 import type { MenuItem } from '@/types/api'
 import { CompanyLogo } from './CompanyLogo'
+import { routeParentOf } from './routeParents'
 
 /** Título de la sección que agrupa las opciones sueltas del módulo (Inicio, Crear informe, Reportes). */
 const MODULE_SECTION = 'Trabajo social'
@@ -50,6 +51,8 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggleCollapse, onNavigate }: SidebarProps) {
   const menus = useAuthStore((s) => s.user?.menus ?? [])
   const sections = toSections(menus)
+  // Pantallas sin opción propia (p. ej. Editar informe) marcan la opción a la que pertenecen.
+  const parentPath = routeParentOf(useLocation().pathname)?.parent
 
   return (
     <div className="flex h-full flex-col bg-sidebar">
@@ -71,7 +74,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse, onNavigate }: Sid
                   <NavLink
                     to={item.path ?? '#'}
                     title={collapsed ? item.title : undefined}
-                    className={({ isActive }) => itemClass(isActive, collapsed)}
+                    className={({ isActive }) => itemClass(isActive || item.path === parentPath, collapsed)}
                     onClick={onNavigate}
                   >
                     {renderMenuIcon(item.icon)}

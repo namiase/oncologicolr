@@ -10,6 +10,7 @@ import { useDocumentTitle } from '@/features/branding/useDocumentTitle'
 import { useAuthStore } from '@/stores/authStore'
 import type { MenuItem } from '@/types/api'
 import { MobileDrawer } from './MobileDrawer'
+import { menuPathFor, routeParentOf } from './routeParents'
 import { SessionWatcher } from './SessionWatcher'
 import { Sidebar } from './Sidebar'
 import { ThemeToggle } from './ThemeToggle'
@@ -23,11 +24,6 @@ function findTrail(menus: MenuItem[], pathname: string, trail: MenuItem[] = []):
   }
   return null
 }
-
-/** Pantallas sin opción de menú propia: se muestran dentro de la opción indicada (ruta y título). */
-const ROUTE_PARENTS: [RegExp, string][] = [[/^\/informes\/[^/]+\/editar$/, '/informes/nuevo']]
-
-const menuPathFor = (pathname: string) => ROUTE_PARENTS.find(([pattern]) => pattern.test(pathname))?.[1] ?? pathname
 
 const COLLAPSED_KEY = 'ts:sidebar-collapsed'
 
@@ -54,7 +50,9 @@ export function AppLayout() {
   const [changingPassword, setChangingPassword] = useState(false)
   const user = useAuthStore((s) => s.user)
   const { pathname } = useLocation()
-  const trail = findTrail(user?.menus ?? [], menuPathFor(pathname)) ?? []
+  const menuTrail = findTrail(user?.menus ?? [], menuPathFor(pathname)) ?? []
+  const subpage = menuTrail.length > 0 ? routeParentOf(pathname) : undefined
+  const trail = [...menuTrail.map(({ id, title }) => ({ id, title })), ...(subpage ? [{ id: 'subpage', title: subpage.title }] : [])]
   useDocumentTitle(trail.at(-1)?.title)
 
   // Al cerrar sesión, ProtectedRoute redirige al login automáticamente.
