@@ -1,3 +1,4 @@
+import { useRef, type RefCallback } from 'react'
 import { Controller, get, useFieldArray, useWatch, type Control, type FieldErrors, type Path } from 'react-hook-form'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -21,6 +22,33 @@ type FieldName = Path<ReportForm>
 
 const errorOf = (errors: FieldErrors<ReportForm>, name: string) =>
   (get(errors, name) as { message?: string } | undefined)?.message
+
+/**
+ * Al elegir "Otro" de la lista, el foco pasa al campo para escribir el valor (que aparece en ese
+ * momento): `request()` en el onChange de la lista y `ref(fieldRef)` en el campo.
+ */
+function useFocusOnRequest() {
+  const pending = useRef(false)
+  const mounted = useRef<HTMLInputElement | null>(null)
+  return {
+    request: () => {
+      // Si el campo ya estaba visible, se enfoca después de que la lista devuelva el foco a su botón.
+      const element = mounted.current
+      if (element) requestAnimationFrame(() => element.focus())
+      else pending.current = true
+    },
+    ref:
+      (fieldRef: RefCallback<HTMLInputElement>): RefCallback<HTMLInputElement> =>
+      (element) => {
+        fieldRef(element)
+        mounted.current = element
+        if (element && pending.current) {
+          pending.current = false
+          element.focus()
+        }
+      },
+  }
+}
 
 interface SelectFieldProps {
   control: Control<ReportForm>
@@ -112,6 +140,7 @@ export function ChoiceField({
   const otherId = `rf-${otherName}`
   const otherHint = 'Se agregará a la tabla maestra al guardar.'
   const value = useWatch({ control, name }) as string
+  const otherFocus = useFocusOnRequest()
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
@@ -139,6 +168,7 @@ export function ChoiceField({
                   onChange={(next, typed) => {
                     field.onChange(next)
                     if (typed !== undefined) otherField.onChange(typed.slice(0, otherMax))
+                    else if (isOther(next)) otherFocus.request()
                   }}
                 />
               )}
@@ -154,7 +184,7 @@ export function ChoiceField({
             render={({ field }) => (
               <Input
                 id={otherId}
-                ref={field.ref}
+                ref={otherFocus.ref(field.ref)}
                 value={field.value as string}
                 maxLength={otherMax}
                 placeholder="Valor nuevo"
@@ -263,6 +293,8 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
   const n = index + 1
   const id = `rf-${name}-${index}`
   const row = useWatch({ control, name: base }) as PhoneRow | undefined
+  const areaCodeFocus = useFocusOnRequest()
+  const kinshipFocus = useFocusOnRequest()
 
   const messages = (['areaCodeId', 'areaCodeOther', 'number', 'kinshipId', 'kinshipOther'] as const)
     .map((key) => errorOf(errors, `${base}.${key}`))
@@ -301,6 +333,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                     onChange={(value, typed) => {
                       field.onChange(value)
                       if (typed !== undefined && AREA_CODE.test(typed)) other.onChange(typed)
+                      else if (value === OTHER) areaCodeFocus.request()
                     }}
                   />
                 )}
@@ -314,7 +347,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
             name={`${base}.areaCodeOther`}
             render={({ field }) => (
               <Input
-                ref={field.ref}
+                ref={areaCodeFocus.ref(field.ref)}
                 aria-label={`Código de área nuevo del teléfono ${n}`}
                 inputMode="numeric"
                 placeholder="0261"
@@ -374,6 +407,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                         onChange={(value, typed) => {
                           field.onChange(value)
                           if (typed !== undefined) other.onChange(typed.slice(0, otherKinshipMax))
+                          else if (value === OTHER) kinshipFocus.request()
                         }}
                       />
                     )}
@@ -387,7 +421,7 @@ function PhoneRowFields({ control, errors, name, index, areaCodes, kinships, loa
                 name={`${base}.kinshipOther`}
                 render={({ field }) => (
                   <Input
-                    ref={field.ref}
+                    ref={kinshipFocus.ref(field.ref)}
                     aria-label={`Parentesco nuevo del teléfono ${n}`}
                     placeholder="Parentesco"
                     maxLength={otherKinshipMax}
