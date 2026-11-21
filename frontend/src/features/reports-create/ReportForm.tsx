@@ -238,6 +238,7 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
           placeholder={props.placeholder}
           max={props.max}
           invalid={Boolean(error)}
+          aria-required={props.required || undefined}
           aria-describedby={describedBy(id(name), error)}
           {...register(name)}
         />
