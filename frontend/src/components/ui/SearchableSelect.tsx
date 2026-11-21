@@ -308,7 +308,7 @@ export function SearchableSelect({
         disabled={disabled}
         onClick={() => (open ? close(false) : openList())}
         onKeyDown={onTriggerKeyDown}
-        className={cn(controlClass(invalid), 'flex h-10 items-center gap-2 pr-2.5 text-left', className)}
+        className={cn(controlClass(invalid), 'flex h-11 items-center gap-2 pr-2.5 text-left lg:h-10', className)}
       >
         <span className={cn('min-w-0 flex-1 truncate', !display && 'font-normal text-slate-500')}>
           {display ?? (loading ? 'Cargando…' : placeholder)}
@@ -345,7 +345,7 @@ export function SearchableSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onListKeyDown}
-                className="h-9 w-full rounded-lg border-0 bg-slate-50 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-control ring-inset placeholder:text-slate-500 focus:ring-2 focus:ring-brand-600 focus:outline-none"
+                className="h-11 w-full rounded-lg border-0 bg-slate-50 lg:h-9 pr-3 pl-8 text-sm text-slate-900 ring-1 ring-control ring-inset placeholder:text-slate-500 focus:ring-2 focus:ring-brand-600 focus:outline-none"
               />
             </div>
           )}
@@ -394,7 +394,7 @@ export function SearchableSelect({
                   onClick={() => choose(item)}
                   onPointerMove={() => setActive(index)}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm',
+                    'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-3 text-sm lg:py-2',
                     index === active ? 'bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-100' : 'text-slate-700',
                     item.kind === 'empty' && 'text-slate-500 italic',
                     item.kind === 'other' && 'font-semibold text-brand-700 dark:text-brand-300',

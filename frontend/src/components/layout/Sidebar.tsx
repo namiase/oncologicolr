@@ -28,7 +28,7 @@ const toSections = (menus: MenuItem[]): Section[] =>
 
 const itemClass = (active: boolean, collapsed: boolean) =>
   cn(
-    'relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-colors',
+    'relative flex items-center gap-3 rounded-lg py-3 text-sm font-medium transition-colors lg:py-2',
     collapsed ? 'justify-center px-0' : 'px-3',
     active
       ? cn(

@@ -7,7 +7,7 @@ interface InputProps extends ComponentProps<'input'> {
 }
 
 export function Input({ invalid, className, ...props }: InputProps) {
-  return <input aria-invalid={invalid || undefined} className={cn(controlClass(invalid), 'h-10', className)} {...props} />
+  return <input aria-invalid={invalid || undefined} className={cn(controlClass(invalid), 'h-11 lg:h-10', className)} {...props} />
 }
 
 export function Textarea({ invalid, className, ...props }: ComponentProps<'textarea'> & { invalid?: boolean }) {

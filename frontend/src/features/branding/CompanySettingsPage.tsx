@@ -207,7 +207,7 @@ function ImagePicker({ label, choice, savedUrl, fallbackUrl, accept, canUpdate, 
           <div className="flex flex-wrap gap-2">
             <label
               className={cn(
-                'inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-surface px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-control ring-inset hover:bg-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600',
+                'inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg lg:h-10 bg-surface px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-control ring-inset hover:bg-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600',
                 !canUpdate && 'pointer-events-none opacity-60',
               )}
             >

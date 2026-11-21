@@ -461,7 +461,7 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
 
       <Section number={4} title="Paciente de pediatría">
         <div className="sm:col-span-2 lg:col-span-6">
-          <label className="inline-flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-800">
+          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-800 lg:min-h-0">
             <Controller
               control={control}
               name="isPediatric"

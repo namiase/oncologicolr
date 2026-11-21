@@ -60,7 +60,8 @@ export function CrudTable<TItem extends CrudEntity>({
                     <button
                       type="button"
                       onClick={() => onSort(column.sortKey!)}
-                      className="group inline-flex items-center gap-1 uppercase hover:text-slate-900"
+                      // El área táctil cubre toda la altura de la celda (40 px), no solo el texto de 16 px.
+                      className="group relative inline-flex items-center gap-1 uppercase before:absolute before:-inset-x-2 before:-inset-y-3 before:content-[''] hover:text-slate-900"
                     >
                       {column.header}
                       {active ? (

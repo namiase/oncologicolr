@@ -123,7 +123,7 @@ function TabButton({
       aria-controls={panel}
       onClick={onSelect}
       className={cn(
-        'h-9 rounded-lg px-4 text-sm font-semibold transition-colors',
+        'h-11 rounded-lg px-4 text-sm font-semibold transition-colors lg:h-9',
         selected ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
       )}
     >

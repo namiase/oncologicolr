@@ -14,8 +14,8 @@ const variants: Record<Variant, string> = {
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'h-8 gap-1.5 rounded-lg px-3 text-sm',
-  md: 'h-10 gap-2 rounded-[10px] px-4 text-sm',
+  sm: 'h-11 gap-1.5 rounded-lg px-3 text-sm lg:h-8',
+  md: 'h-11 gap-2 rounded-[10px] px-4 text-sm lg:h-10',
   lg: 'h-12 gap-2 rounded-xl px-5 text-[15px]',
   // 44 px en pantallas táctiles (guía de objetivos táctiles); 36 px en escritorio.
   icon: 'size-11 rounded-[10px] lg:size-9',
