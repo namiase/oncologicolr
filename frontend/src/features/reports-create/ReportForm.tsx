@@ -21,7 +21,6 @@ import {
   formFieldOf,
   JOB_OTHER_OPTIONS,
   LIMITS,
-  OTHER_OPTION_F,
   reportSchema,
   todayISO,
   toPayload,
@@ -367,7 +366,6 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
         {text('admissionDate', 'Fecha de ingreso', 10, { required: true, type: 'date', max: todayISO(), className: 'lg:col-span-2' })}
         {choice('religionId', 'religionOther', 'Religión', toOptions(religions.data), {
           loading: religions.isPending,
-          others: [OTHER_OPTION_F],
           className: 'lg:col-span-2',
         })}
 
@@ -403,11 +401,7 @@ export function ReportForm({ mode, context, initial, onSaved }: ReportFormProps)
         <AgeField control={control} manualRef={pediatricManual} onPediatric={setPediatric} />
 
         {select('genderId', 'Sexo', toOptions(genders.data), { loading: genders.isPending, className: 'lg:col-span-2' })}
-        {choice('raceId', 'raceOther', 'Raza', toOptions(races.data), {
-          loading: races.isPending,
-          others: [OTHER_OPTION_F],
-          className: 'lg:col-span-2',
-        })}
+        {choice('raceId', 'raceOther', 'Raza', toOptions(races.data), { loading: races.isPending, className: 'lg:col-span-2' })}
         {choice('maritalStatusId', 'maritalStatusOther', 'Estado civil', toOptions(maritalStatuses.data), {
           loading: maritalStatuses.isPending,
           className: 'lg:col-span-2',

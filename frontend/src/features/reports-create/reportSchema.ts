@@ -40,15 +40,12 @@ export const OTHER_OCCUPATION = `o:${OTHER}`
 /** "Otro" de una lista: se escribe el valor nuevo y se agrega a la tabla maestra al guardar. */
 export const OTHER_OPTION: OtherOption = {
   value: OTHER,
-  label: 'Otro (escribir)',
+  label: 'Otros',
   createLabel: (query) => `Agregar «${query}»`,
 }
 
-/** El mismo "Otro" para listas de nombre femenino (religión, raza). */
-export const OTHER_OPTION_F: OtherOption = { ...OTHER_OPTION, label: 'Otra (escribir)' }
-
 /**
- * Filas de catálogo llamadas solo "Otro"/"Otra": junto a "Otro (escribir)" serían dos opciones
+ * Filas de catálogo llamadas solo "Otro"/"Otra": junto a "Otros" serían dos opciones
  * casi iguales, y la del catálogo imprime "Otra" en el PDF sin el valor real. Se ocultan de la
  * lista salvo que sea el valor ya guardado en el informe.
  */
@@ -67,10 +64,13 @@ export const withoutGenericOther = (options: SearchableOption[], current: string
       ),
   )
 
-/** "Profesión u oficio": un "Otro" por grupo, para saber en qué tabla maestra agregarlo. */
+/**
+ * "Profesión u oficio": un "Otros" por grupo, para saber en qué tabla maestra agregarlo
+ * (dos opciones con el mismo texto no se podrían distinguir).
+ */
 export const JOB_OTHER_OPTIONS: OtherOption[] = [
-  { value: OTHER_PROFESSION, label: 'Otra profesión (escribir)', createLabel: (q) => `Agregar «${q}» como profesión` },
-  { value: OTHER_OCCUPATION, label: 'Otro oficio (escribir)', createLabel: (q) => `Agregar «${q}» como oficio` },
+  { value: OTHER_PROFESSION, label: 'Otra profesión', createLabel: (q) => `Agregar «${q}» como profesión` },
+  { value: OTHER_OCCUPATION, label: 'Otro oficio', createLabel: (q) => `Agregar «${q}» como oficio` },
 ]
 
 /** Fila de teléfono del formulario ('' = vacío; areaCodeId/kinshipId = OTHER si se escribió uno nuevo). */
